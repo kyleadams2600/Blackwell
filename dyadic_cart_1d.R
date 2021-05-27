@@ -128,3 +128,36 @@ mse = function(iter){
 }
   ####################################
   
+#####Algorithm for Two-Fold Cross Validation----
+#Step 1: Take odd observations from list of data points
+#Step 2: Create a new data vector of these that looks like y1, y1+y3/2, y3, ...
+#Step 3: Apply dyadic CART algorithm w grid of lambda in {1, 2 , 2^2, ..., 2^(log(n))}
+#Step 4: Now we should have log(n) theta hats each with a different lambda
+#Step 5: Now we want to minimize "prediction error" = [sum of even observations](yi - theta hat, lambdaj,i)
+#Step 6: Now the final fit for the even observations is going to be theta hat (lambda hat odd) @ even observations
+#Step 7: Reverse even and odd
+#Step 8: Combine thetas to have estimate
+
+#Made for loop for step 1
+listexample = c(1,2,3,4,5,6,7,8)
+newlist = list()
+count = 1
+
+for (i in 1:(length(listexample)/2)-1){
+  newlist[i] = listexample[count]
+  count = count + 2
+}
+
+count2 = 1
+averagelist = list()
+for (i in 1:length(listexample)) {
+  if (i %% 2 == 1) {
+    averagelist[i] = newlist[count]
+  }
+  else {
+    averagelist[i] = sum(newlist[count],newlist[count+1])/2
+  }
+    ###how the heck do you add elements of a list together!!
+}
+
+  
