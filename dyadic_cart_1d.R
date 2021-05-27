@@ -165,7 +165,7 @@ for (i in 1:length(listexample)) {
 crossval = function(y) { # y is the list of observations
   
   n = length(y)
-  y_odd = vector(,n) # list of odd indexed observations from y
+  y_odd = vector(mode = "integer", length = n) # list of odd indexed observations from y
   
   for (i in 1:n) {
     if (i %% 2 != 0) { # odd indexes
@@ -180,6 +180,6 @@ crossval = function(y) { # y is the list of observations
   }
   return(y_odd)
 } 
-  
+
 
   
