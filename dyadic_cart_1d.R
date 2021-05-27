@@ -160,4 +160,23 @@ for (i in 1:length(listexample)) {
     ###how the heck do you add elements of a list together!!
 }
 
+# step 1 + step 2 
+
+crossval = function(y) { # y is the list of observations
+  
+  n = length(y)
+  y_odd = vector(,n) # list of odd indexed observations from y
+  
+  for (i in 1:n) {
+    if (i %% 2 != 0) { # odd indexes
+      y_odd[i] = y[i]
+      i++
+    } else if (i %% 2 == 0 && i != n) { # even indexes
+        y_odd[i] == (y[i-1] + y[i+1])/2 # fill in missing obsrvations with average of neighboring observations
+        i++
+    } # what do we do if the last observation is even?
+  }
+} 
+  
+
   
