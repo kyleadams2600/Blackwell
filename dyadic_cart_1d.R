@@ -170,10 +170,8 @@ crossval = function(y) { # y is the list of observations
   for (i in 1:n) {
     if (i %% 2 != 0) { # odd indexes
       y_odd[i] = y[i]
-      i++
     } else if (i %% 2 == 0 && i != n) { # even indexes
         y_odd[i] == (y[i-1] + y[i+1])/2 # fill in missing observations with average of neighboring observations
-        i++
     } else if (i == n && i %% 2 == 0) {
       y_odd[i] == (y[1] + y[i-1])/2
     }
