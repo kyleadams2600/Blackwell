@@ -49,12 +49,12 @@ crossval_even = function(y) { # y is the list of observations
       y_even[i] = y[i]
     } 
     else if (i %% 2 == 1 && i != n) { # even indexes
-      y_even[i] == (y[i-1] + y[i+1]) / 2 # fill in odd indexes with average of neighboring observations
+      y_even[i] = (y[i-1] + y[i+1]) / 2 # fill in odd indexes with average of neighboring observations
       #message(y[i-1], y[i], y[i+1]) -- bug test
       #message((y[i-1] + y[i+1])/2)  -- bug test
     } 
     else if (i == n && i %% 2 == 1) { #if last entry and odd length, make last entry an average of the first and second to last observation
-      y_even[i] == (y[1] + y[i-1])/2
+      y_even[i] = (y[1] + y[i-1])/2
     }
     }
   }
