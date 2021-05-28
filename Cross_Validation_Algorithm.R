@@ -40,18 +40,18 @@ crossval_odd = function(y) { # y is the list of observations
 crossval_even = function(y) { # y is the list of observations
   
   n = length(y)
-  y_even = vector(mode = "integer", length = n) # list of odd indexed observations from y
+  y_even = vector(mode = "integer", length = n) # list of even indexed observations from y
   
   for (i in 1:n) {
-    if (i %% 2 != 1) { # odd indexes
+    if (i %% 2 != 1) { # even indexes
       y_even[i] = y[i]
     } 
     else if (i %% 2 == 1 && i != n) { # even indexes
-      y_even[i] == ((y[i-1] + y[i+1])/2)# fill in missing observations with average of neighboring observations
+      y_even[i] == ((y[i-1] + y[i+1])/2)# fill in odd indexes with average of neighboring observations
       message(y[i-1], y[i], y[i+1])
       message((y[i-1] + y[i+1])/2)
     } 
-    else if (i == n && i %% 2 == 1) { #if last entry and even length, make last entry an average of the first and second to last observation
+    else if (i == n && i %% 2 == 1) { #if last entry and odd length, make last entry an average of the first and second to last observation
       y_even[i] == (y[1] + y[i-1])/2
     }
   }
