@@ -23,12 +23,12 @@ crossval_odd = function(y) { # y is the list of observations
       y_odd[i] = y[i]
     } 
     else if (i %% 2 == 0 && i != n) { # even indexes
-      y_odd[i] == ((y[i-1] + y[i+1])/2)# fill in missing observations with average of neighboring observations
+      y_odd[i] = (y[i-1] + y[i+1])/2 # fill in missing observations with average of neighboring observations
       message(y[i-1], y[i], y[i+1])
       message((y[i-1] + y[i+1])/2)
     } 
     else if (i == n && i %% 2 == 0) { #if last entry and even length, make last entry an average of the first and second to last observation
-      y_odd[i] == (y[1] + y[i-1])/2
+      y_odd[i] = (y[1] + y[i-1])/2
     }
   }
    
