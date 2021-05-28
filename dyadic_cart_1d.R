@@ -138,27 +138,6 @@ mse = function(iter){
 #Step 7: Reverse even and odd
 #Step 8: Combine thetas to have estimate
 
-#Made for loop for step 1
-listexample = c(1,2,3,4,5,6,7,8)
-newlist = list()
-count = 1
-
-for (i in 1:(length(listexample)/2)-1){
-  newlist[i] = listexample[count]
-  count = count + 2
-}
-
-count2 = 1
-averagelist = list()
-for (i in 1:length(listexample)) {
-  if (i %% 2 == 1) {
-    averagelist[i] = newlist[count]
-  }
-  else {
-    averagelist[i] = sum(newlist[count],newlist[count+1])/2
-  }
-    ###how the heck do you add elements of a list together!!
-}
 
 # step 1 + step 2 
 
@@ -170,9 +149,13 @@ crossval = function(y) { # y is the list of observations
   for (i in 1:n) {
     if (i %% 2 != 0) { # odd indexes
       y_odd[i] = y[i]
-    } else if (i %% 2 == 0 && i != n) { # even indexes
-        y_odd[i] == (y[i-1] + y[i+1])/2 # fill in missing observations with average of neighboring observations
-    } else if (i == n && i %% 2 == 0) {
+    } 
+    else if (i %% 2 == 0 && i != n) { # even indexes
+        y_odd[i] == ((y[i-1] + y[i+1]))/2# fill in missing observations with average of neighboring observations
+        message(y[i-1], y[i], y[i+1])
+        message((y[i-1] + y[i+1])/2)
+       } 
+    else if (i == n && i %% 2 == 0) { #if last entry and even length, make last entry an average of the first and second to last observation
       y_odd[i] == (y[1] + y[i-1])/2
     }
   }
@@ -180,4 +163,4 @@ crossval = function(y) { # y is the list of observations
 } 
 
 
-  #git push test 
+
