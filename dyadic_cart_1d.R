@@ -162,7 +162,8 @@ for (i in 1:length(listexample)) {
 
 # step 1 + step 2 
 
-crossval = function(y) { # y is the list of observations
+# returns vector containing odd indexed observations from y, even indexed observations are replaced by their neighbors' average
+odd_obs = function(y) { # y is the list of observations
   
   n = length(y)
   y_odd = vector(mode = "integer", length = n) # list of odd indexed observations from y
@@ -178,6 +179,26 @@ crossval = function(y) { # y is the list of observations
   }
   return(y_odd)
 } 
+
+# returns vector containing even indexed observations from y, odd indexed observations are replaced by their neighbors' average
+even_obs = function(y) { 
+  
+  n = length(y)
+  y_even = vector(mode = "integer", length = n) # list of even indexed observations from y
+  
+  for (i in 1:n) {
+    if (i %% 2 == 0) { # even indexes
+      y_even[i] = y[i]
+    } else if (i %% 2 != 0 && i != 1) { # odd indexes
+      y_even[i] == (y[i-1] + y[i+1])/2 # fill in missing observations with average of neighboring observations
+    } else if (i == 1) {
+      y_even[i] == y[i+1] # not sure what to do for first element?
+    } else if (i == n && i %% 2 != 0) {
+      y_even[i] == (y[2] + y[i-1])/2 # also not sure what to do if last element is odd
+    }
+  }
+  return(y_even)
+}
 
 
   
