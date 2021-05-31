@@ -128,13 +128,14 @@ mse = function(iter){
 }
   ####################################
   
+#HOW MANY LAMBDAS?????
+  # n = sample size = 2^l
+  # lambda grid = {1, 2^1, 2^2, ... , 2^log(n)}
+  # so number of lambdas will be log(n) (rounded down to nearest int) + 1
 
-#playing with dyadic cart----
-#step 1: run code
-#step 2: set l, n
 
 #function that spits out theta values for each lambda
-create_grid = function(l, y) { #l is used for n = 2^l in dyadic_1d, y is function
+create_theta_vector = function(l, y) { #l is used for n = 2^l in dyadic_1d, y is function
   
   n = 2^l
   lambda_grid = vector(mode = "integer", length = log(n))
@@ -144,21 +145,29 @@ create_grid = function(l, y) { #l is used for n = 2^l in dyadic_1d, y is functio
     lambda_grid[i+1] = 2^i #adds power of 2 as a lambda value in grid
   }
   
-  for (i in 1:n) {
-    theta_vector[i] = dyadic_1d(l, y, lambda_grid[i]) #creates vector of theta values
+  for (i in 1:n+1) {
+    theta_vector[i] = dyadic_1d(l, y, lambda_grid[i])[2] #creates vector of theta values
   }
   
-  return(lambda_grid)
+  return(theta_vector)
   
 }
 
 #function that minimizes prediction error
-minimize_pe = function(y, theta_hat) {
+minimize_pe = function(y, theta_hat, l) { #spits out theta vector with minimum prediction error
+  #maybe make it so you don't need l again, but l is the same as the previous function
   
-  n = length(y)
-  k = 
-  pe_list = vector(mode = "integer", length = k)
+  k = length(y)
+  n = 2^l
+  m = as.integer(log(n)) + 1 #length of lambda grid
+  pe_list = vector(mode = "integer", length = m)
+  resid = 0
   
-  for (i in 1:n) {
-    pe_list[i] = (y[i] - )
+  for (i in 1:m) {
+    for (j in 1:n)
+    resid = (y[j] - theta_hat[j])^2 + resid #R doesn't have increment operators
   }
+  pe_list[i] = resid
+  resid = 0 #resets resid
+}
+
