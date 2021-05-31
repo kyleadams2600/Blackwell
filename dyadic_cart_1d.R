@@ -157,8 +157,18 @@ minimize_pe = function(y, theta_hat) {
   
   n = length(y)
   k = 
+  even_obs = vector(mode = "integer", length = floor(n/2))
   pe_list = vector(mode = "integer", length = k)
+  
+  for (i in 1:n) { # create vector containing even indexed observations of y
+    for (j in 1:floor(n/2)) {
+      if (i %% 2 == 0) {
+        even_obs[j] = y[i]
+      }
+    }
+  }
   
   for (i in 1:n) {
     pe_list[i] = (y[i] - )
   }
+}
