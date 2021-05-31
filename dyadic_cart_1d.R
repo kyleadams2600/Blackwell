@@ -118,7 +118,7 @@ mse = function(iter){
     n = 2^l
     theta = sapply(seq(1:n)/n,f2)
     for (j in 1:iter){
-    y = theta + rnorm(2^l,0,sigma)
+    y = theta + rnorm(2^l,0,sigma) #theta is signal, rnorm is noise
     #ans = dyadic_1d(l,y,lambda[l])[[2]]
     ans = dyadic_1d(l,y,lambda)[[2]]
     mse[j] = mean((theta - ans)^2)
@@ -134,12 +134,13 @@ mse = function(iter){
 #step 2: set l, n
 
 #function that spits out theta values for each lambda
-create_grid = function(n, l, y) { #n is number of lambdas, l is used for n = 2^l in dyadic_1d, y is function
+create_grid = function(l, y) { #l is used for n = 2^l in dyadic_1d, y is function
   
-  lambda_grid = vector(mode = "integer", length = n)
+  n = 2^l
+  lambda_grid = vector(mode = "integer", length = log(n))
   theta_vector = list()
   
-  for (i in 0:n-1) {
+  for (i in 0:log(n)) {
     lambda_grid[i+1] = 2^i #adds power of 2 as a lambda value in grid
   }
   
@@ -147,6 +148,17 @@ create_grid = function(n, l, y) { #n is number of lambdas, l is used for n = 2^l
     theta_vector[i] = dyadic_1d(l, y, lambda_grid[i]) #creates vector of theta values
   }
   
-  return(theta_vector)
+  return(lambda_grid)
   
 }
+
+#function that minimizes prediction error
+minimize_pe = function(y, theta_hat) {
+  
+  n = length(y)
+  k = 
+  pe_list = vector(mode = "integer", length = k)
+  
+  for (i in 1:n) {
+    pe_list[i] = (y[i] - )
+  }
