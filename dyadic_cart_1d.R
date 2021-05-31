@@ -157,9 +157,11 @@ minimize_pe = function(y, theta_hat) {
   
   n = length(y)
   k = floor(n/2)
-  even_obs = vector(mode = "integer", length = floor(n/2))
-  pe_list = vector(mode = "numeric", length = k)
+  even_obs = vector(mode = "integer", length = k)
+  pe_even = vector(mode = "numeric", length = k)
   lambdas = create_grid(l, y)
+  
+  # STILL NEED TO FIGURE OUT HOW LISTS WORK - odd_fit and even_fit should be n-dim vectors 
   
   for (i in 1:n) { # create vector containing even indexed observations of y
     for (j in 1:k) {
@@ -170,12 +172,46 @@ minimize_pe = function(y, theta_hat) {
   }
   
   for (i in 1:k) {
-    pe_list[i] = sum((even_obs[i] - theta_hat[i])^2)
+    pe_even[i] = sum((even_obs[i] - theta_hat[i])^2)
   }
   
-  min_index = which.min(pe_list) # returns index of smallest error
+  min_index = which.min(pe_even) # returns index of smallest error
   lambda_odd = lambdas[min_index] # lambda which has the smallest error
   even_fit = theta_hat[min_index] # best fit for even observations is the theta associated with lambda_odd
   
   # repeat process with odd and even switched
+  
+  x = ceiling(n/2)
+  odd_obs = vector(mode = "integer", length = x)
+  pe_odd = vector(mode = "numeric", length = x)
+  
+  for (i in 1:n) { # create vector containing odd indexed observations of y
+    for (j in 1:x) {
+      if (i %% 2 == 1) {
+        odd_obs[j] = y[i]
+      }
+    }
+  }
+  
+  for (i in 1:x) {
+    pe_odd[i] = sum((odd_obs[i] - theta_hat[i])^2)
+  }
+  
+  min_odd = which.min(pe_odd)
+  lambda_even = lambdas[min_odd]
+  odd_fit = theta_hat[min_odd] # this is supposed to be an n-dimensional vector
+  
+  # now just combine odd and even for final fit
+  
+  final_fit = vector(mode = "integer", length = n)
+  
+  for (i in 1:n) {
+    if (i %% 2 == 1) {
+      final_fit[i] = odd_fit[i]
+    } else {
+      final_fit[i] = even_fit[i]
+    }
+  }
+  
+  return(final_fit)
 }
