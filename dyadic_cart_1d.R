@@ -142,7 +142,7 @@ create_theta_vector = function(l, y) { #l is used for n = 2^l in dyadic_1d, y is
   theta_vector = list()
   
   for (i in 0:log(n)) {
-    lambda_grid[i+1] = 2^i #adds powers of 2 as a lambda value in grid
+    lambda_grid[i+1] = 2^i #adds power of 2 as a lambda value in grid
   }
   
   for (i in 1:n+1) {
@@ -157,6 +157,7 @@ create_theta_vector = function(l, y) { #l is used for n = 2^l in dyadic_1d, y is
 minimize_pe = function(y, theta_hat, l) { #spits out theta vector with minimum prediction error
   #maybe make it so you don't need l again, but l is the same as the previous function
   
+<<<<<<< HEAD
   k = length(y)
   n = 2^l
   m = as.integer(log(n)) + 1 #length of lambda grid
@@ -171,3 +172,65 @@ minimize_pe = function(y, theta_hat, l) { #spits out theta vector with minimum p
   resid = 0 #resets resid
 }
 
+=======
+  n = length(y)
+  k = floor(n/2)
+  even_obs = vector(mode = "integer", length = k)
+  pe_even = vector(mode = "numeric", length = k)
+  lambdas = create_grid(l, y)
+  
+  # STILL NEED TO FIGURE OUT HOW LISTS WORK - odd_fit and even_fit should be n-dim vectors 
+  
+  for (i in 1:n) { # create vector containing even indexed observations of y
+    for (j in 1:k) {
+      if (i %% 2 == 0) {
+        even_obs[j] = y[i]
+      }
+    }
+  }
+  
+  for (i in 1:k) {
+    pe_even[i] = sum((even_obs[i] - theta_hat[i])^2)
+  }
+  
+  min_index = which.min(pe_even) # returns index of smallest error
+  lambda_odd = lambdas[min_index] # lambda which has the smallest error
+  even_fit = list() # empty right now
+  
+  # repeat process with odd and even switched
+  
+  x = ceiling(n/2)
+  odd_obs = vector(mode = "integer", length = x)
+  pe_odd = vector(mode = "numeric", length = x)
+  
+  for (i in 1:n) { # create vector containing odd indexed observations of y
+    for (j in 1:x) {
+      if (i %% 2 == 1) {
+        odd_obs[j] = y[i]
+      }
+    }
+  }
+  
+  for (i in 1:x) {
+    pe_odd[i] = sum((odd_obs[i] - theta_hat[i])^2)
+  }
+  
+  min_odd = which.min(pe_odd)
+  lambda_even = lambdas[min_odd]
+  odd_fit = list() # empty for now
+  
+  # now just combine odd and even for final fit
+  
+  final_fit = list()
+  
+  for (i in 1:n) {
+    if (i %% 2 == 1) {
+      final_fit[i] = odd_fit[i]
+    } else {
+      final_fit[i] = even_fit[i]
+    }
+  }
+  
+  return(final_fit)
+}
+>>>>>>> bb4327e8dd418437d4ed9d6118ba5b1306729fc3
