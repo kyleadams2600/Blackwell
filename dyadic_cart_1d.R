@@ -156,19 +156,26 @@ create_grid = function(l, y) { #l is used for n = 2^l in dyadic_1d, y is functio
 minimize_pe = function(y, theta_hat) {
   
   n = length(y)
-  k = 
+  k = floor(n/2)
   even_obs = vector(mode = "integer", length = floor(n/2))
-  pe_list = vector(mode = "integer", length = k)
+  pe_list = vector(mode = "numeric", length = k)
+  lambdas = create_grid(l, y)
   
   for (i in 1:n) { # create vector containing even indexed observations of y
-    for (j in 1:floor(n/2)) {
+    for (j in 1:k) {
       if (i %% 2 == 0) {
         even_obs[j] = y[i]
       }
     }
   }
   
-  for (i in 1:n) {
-    pe_list[i] = (y[i] - )
+  for (i in 1:k) {
+    pe_list[i] = sum((even_obs[i] - theta_hat[i])^2)
   }
+  
+  min_index = which.min(pe_list) # returns index of smallest error
+  lambda_odd = lambdas[min_index] # lambda which has the smallest error
+  even_fit = theta_hat[min_index] # best fit for even observations is the theta associated with lambda_odd
+  
+  # repeat process with odd and even switched
 }
