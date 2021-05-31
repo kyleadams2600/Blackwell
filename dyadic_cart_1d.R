@@ -142,7 +142,7 @@ create_theta_vector = function(l, y) { #l is used for n = 2^l in dyadic_1d, y is
   theta_vector = list()
   
   for (i in 0:log(n)) {
-    lambda_grid[i+1] = 2^i #adds power of 2 as a lambda value in grid
+    lambda_grid[i+1] = 2^i #adds powers of 2 as a lambda value in grid
   }
   
   for (i in 1:n+1) {
