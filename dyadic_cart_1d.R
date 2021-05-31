@@ -177,7 +177,7 @@ minimize_pe = function(y, theta_hat) {
   
   min_index = which.min(pe_even) # returns index of smallest error
   lambda_odd = lambdas[min_index] # lambda which has the smallest error
-  even_fit = theta_hat[min_index] # best fit for even observations is the theta associated with lambda_odd
+  even_fit = list() # empty right now
   
   # repeat process with odd and even switched
   
@@ -199,11 +199,11 @@ minimize_pe = function(y, theta_hat) {
   
   min_odd = which.min(pe_odd)
   lambda_even = lambdas[min_odd]
-  odd_fit = theta_hat[min_odd] # this is supposed to be an n-dimensional vector
+  odd_fit = list() # empty for now
   
   # now just combine odd and even for final fit
   
-  final_fit = vector(mode = "integer", length = n)
+  final_fit = list()
   
   for (i in 1:n) {
     if (i %% 2 == 1) {
