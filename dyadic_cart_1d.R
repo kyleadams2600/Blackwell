@@ -157,7 +157,6 @@ create_theta_vector = function(l, y) { #l is used for n = 2^l in dyadic_1d, y is
 minimize_pe = function(y, theta_hat, l) { #spits out theta vector with minimum prediction error
   #maybe make it so you don't need l again, but l is the same as the previous function
   
-<<<<<<< HEAD
   k = length(y)
   n = 2^l
   m = as.integer(log(n)) + 1 #length of lambda grid
@@ -165,14 +164,13 @@ minimize_pe = function(y, theta_hat, l) { #spits out theta vector with minimum p
   resid = 0
   
   for (i in 1:m) {
-    for (j in 1:n)
+    for (j in 1:n) {
     resid = (y[j] - theta_hat[j])^2 + resid #R doesn't have increment operators
+    }
   }
   pe_list[i] = resid
   resid = 0 #resets resid
-}
 
-=======
   n = length(y)
   k = floor(n/2)
   even_obs = vector(mode = "integer", length = k)
@@ -233,4 +231,3 @@ minimize_pe = function(y, theta_hat, l) { #spits out theta vector with minimum p
   
   return(final_fit)
 }
->>>>>>> bb4327e8dd418437d4ed9d6118ba5b1306729fc3
