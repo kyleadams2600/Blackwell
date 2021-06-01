@@ -223,26 +223,14 @@ minimize_pe = function(y, theta_hat, l) { #spits out theta vector with minimum p
   k = length(y)
   n = 2^l
   m = as.integer(log(n)) + 1 #length of lambda grid
-  pe_list = vector(mode = "integer", length = m)
-  resid = 0
+  theta_hat = create_theta_vector(l, y)
   
-  for (i in 1:m) {
-    for (j in 1:n) {
-    resid = (y[j] - theta_hat[j])^2 + resid #R doesn't have increment operators
-    }
-  }
-  pe_list[i] = resid
-  resid = 0 #resets resid
-
-  n = length(y)
-  pe_even = vector(mode = "numeric", length = n)
-  lambdas = vector(mode = "integer", length = log(n))
+  pe_even = vector(mode = "numeric", length = k) # pred. errors for even observations
+  lambdas = vector(mode = "integer", length = log(n)) # lambda grid
   
   for (i in 0:log(n)) {
     lambdas[i+1] = 2^i 
   }
-  
-  # STILL NEED TO FIGURE OUT HOW LISTS WORK - odd_fit and even_fit should be n-dim vectors 
   
   for (i in 1:k) {
     pe_even[i] = sum((crossval_even(y)[i] - theta_hat[i])^2)
@@ -254,9 +242,9 @@ minimize_pe = function(y, theta_hat, l) { #spits out theta vector with minimum p
   
   # repeat process with odd and even switched
   
-  pe_odd = vector(mode = "numeric", length = n)
+  pe_odd = vector(mode = "numeric", length = k)
   
-  for (i in 1:x) {
+  for (i in 1:k) {
     pe_odd[i] = sum((crossval_odd(y)[i] - theta_hat[i])^2)
   }
   
@@ -268,7 +256,7 @@ minimize_pe = function(y, theta_hat, l) { #spits out theta vector with minimum p
   
   final_fit = list()
   
-  for (i in 1:n) {
+  for (i in 1:k) {
     if (i %% 2 == 1) {
       final_fit[i] = odd_fit[i]
     } else {
