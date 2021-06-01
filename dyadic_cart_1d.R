@@ -210,10 +210,10 @@ create_theta_vector = function(l, y) { #l is used for n = 2^l in dyadic_1d, y is
   
   for (i in 1:n+1) {
     theta_vector[i] = dyadic_1d(l, y, lambda_grid[i])[2] #creates vector of theta values
-  }
+  } #yields error from line 68
   
   return(theta_vector)
-  
+  #yields correct dyadic_cart answers, but doesn't change based on lambda, and 1 is always null
 }
 
 #function that minimizes prediction error
@@ -226,14 +226,16 @@ minimize_pe = function(y, theta_hat, l) { #spits out theta vector with minimum p
   theta_hat = create_theta_vector(l, y)
   
   pe_even = vector(mode = "numeric", length = k) # pred. errors for even observations
-  lambdas = vector(mode = "integer", length = log(n)) # lambda grid
+  lambdas = vector(mode = "integer", length = m) # lambda grid
   
   for (i in 0:log(n)) {
     lambdas[i+1] = 2^i 
   }
+  for(lambda in 1:m) {
   
-  for (i in 1:k) {
-    pe_even[i] = sum((crossval_even(y)[i] - theta_hat[i])^2)
+    for (i in 1:k) {
+     pe_even[i] = sum((crossval_even(y)[i] - theta_hat[[lambda]][i])^2)
+    }
   }
   
   min_index = which.min(pe_even) # returns index of smallest error
@@ -244,8 +246,11 @@ minimize_pe = function(y, theta_hat, l) { #spits out theta vector with minimum p
   
   pe_odd = vector(mode = "numeric", length = k)
   
-  for (i in 1:k) {
-    pe_odd[i] = sum((crossval_odd(y)[i] - theta_hat[i])^2)
+  for(lambda in 1:m) {
+    
+    for (i in 1:k) {
+      pe_odd[i] = sum((crossval_odd(y)[i] - theta_hat[[lambda]][i])^2)
+    }
   }
   
   min_odd = which.min(pe_odd)
