@@ -175,7 +175,11 @@ minimize_pe = function(y, theta_hat, l) { #spits out theta vector with minimum p
   k = floor(n/2)
   even_obs = vector(mode = "integer", length = k)
   pe_even = vector(mode = "numeric", length = k)
-  lambdas = create_grid(l, y)
+  lambdas = vector(mode = "integer", length = log(n))
+  
+  for (i in 0:log(n)) {
+    lambdas[i+1] = 2^i 
+  }
   
   # STILL NEED TO FIGURE OUT HOW LISTS WORK - odd_fit and even_fit should be n-dim vectors 
   
