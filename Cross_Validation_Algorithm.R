@@ -23,8 +23,7 @@ crossval_odd = function(y) { # y is the list of observations
       y_odd[i] = y[i]
     } else if (i %% 2 == 0 && i != n) { # even indexes
       y_odd[i] = (y[i-1] + y[i+1])/2 # fill in missing observations with average of neighboring observations
-      #message(y[i-1], y[i], y[i+1])
-      #message((y[i-1] + y[i+1])/2)
+  
     } else if (i == n && i %% 2 == 0) { #if last entry and even length, make last entry an average of the first and second to last observation
       y_odd[i] = (y[1] + y[i-1])/2
     }
@@ -50,8 +49,7 @@ crossval_even = function(y) { # y is the list of observations
     } 
     else if (i %% 2 == 1 && i != n) { # even indexes
       y_even[i] = (y[i-1] + y[i+1]) / 2 # fill in odd indexes with average of neighboring observations
-      #message(y[i-1], y[i], y[i+1]) -- bug test
-      #message((y[i-1] + y[i+1])/2)  -- bug test
+    
     } 
     else if (i == n && i %% 2 == 1) { #if last entry and odd length, make last entry an average of the first and second to last observation
       y_even[i] = (y[1] + y[i-1])/2
@@ -61,3 +59,23 @@ crossval_even = function(y) { # y is the list of observations
   
   return(y_even)
 } 
+
+#grid creation function
+create_grid = function(n) { #n is number of lambdas
+  
+  lambda_grid = vector(mode = "integer", length = n)
+  theta_vector = vector(mode = "integer", length = n)
+
+  for (i in 0:n-1) {
+    lambda_grid[i+1] = 2^i #adds power of 2 as a lambda value in grid
+  }
+  
+  for (i in 1:n) {
+    theta_vector[i] = dyadic(l, y, lambda_grid[i])
+  }
+  
+  return(lambda_grid)
+  
+}
+
+
