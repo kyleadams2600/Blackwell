@@ -191,7 +191,7 @@ crossval_even = function(y) { # y is the list of observations
   return(y_even)
 } 
   
-#HOW MANY LAMBDAS?????
+#HOW MANY LAMBDAS?
   # n = sample size = 2^l
   # lambda grid = {1, 2^1, 2^2, ... , 2^log(n)}
   # so number of lambdas will be log(n) (rounded down to nearest int) + 1
@@ -217,7 +217,7 @@ create_theta_vector = function(l, y) { #l is used for n = 2^l in dyadic_1d, y is
 }
 
 #function that minimizes prediction error
-minimize_pe = function(y, theta_hat, l) { #spits out theta vector with minimum prediction error
+minimize_pe = function(y, l) { #spits out theta vector with minimum prediction error
   #maybe make it so you don't need l again, but l is the same as the previous function
   
   k = length(y)
@@ -231,8 +231,8 @@ minimize_pe = function(y, theta_hat, l) { #spits out theta vector with minimum p
   for (i in 0:log(n)) {
     lambdas[i+1] = 2^i 
   }
-  for(lambda in 1:m) {
   
+  for(lambda in 1:m) {
     for (i in 1:k) {
      pe_even[i] = sum((crossval_even(y)[i] - theta_hat[[lambda]][i])^2)
     }
@@ -240,14 +240,17 @@ minimize_pe = function(y, theta_hat, l) { #spits out theta vector with minimum p
   
   min_index = which.min(pe_even) # returns index of smallest error
   lambda_odd = lambdas[min_index] # lambda which has the smallest error
-  even_fit = list() # empty right now
+  even_fit = vector(mode = "integer", length = k) # final fit for even observations
+  
+  for (i in 1:k) {
+    even_fit[i] = theta_hat[[lambda_odd]][i]
+  }
   
   # repeat process with odd and even switched
   
   pe_odd = vector(mode = "numeric", length = k)
   
   for(lambda in 1:m) {
-    
     for (i in 1:k) {
       pe_odd[i] = sum((crossval_odd(y)[i] - theta_hat[[lambda]][i])^2)
     }
@@ -255,11 +258,15 @@ minimize_pe = function(y, theta_hat, l) { #spits out theta vector with minimum p
   
   min_odd = which.min(pe_odd)
   lambda_even = lambdas[min_odd]
-  odd_fit = list() # empty for now
+  odd_fit = vector(mode = "integer", length = k) # final fit for odd observations
+  
+  for (i in 1:k) {
+    odd_fit[i] = theta_hat[[lambda_even]][i]
+  }
   
   # now just combine odd and even for final fit
   
-  final_fit = list()
+  final_fit = vector(mode = "integer", length = k)
   
   for (i in 1:k) {
     if (i %% 2 == 1) {
