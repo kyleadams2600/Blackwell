@@ -196,20 +196,20 @@ crossval_even = function(y) { # y is the list of observations
   # lambda grid = {1, 2^1, 2^2, ... , 2^log(n)}
   # so number of lambdas will be log(n) (rounded down to nearest int) + 1
 
+lambdas = vector(mode = "numeric", length = log(n))
+
+for (i in 0:log(n)) {
+  lambdas[i+1] = 2^i #adds power of 2 as a lambda value in grid
+}
 
 #function that spits out theta values for each lambda
 create_theta_vector = function(l, y) { #l is used for n = 2^l in dyadic_1d, y is function
   
   n = 2^l
-  lambda_grid = vector(mode = "integer", length = log(n))
   theta_vector = list()
   
-  for (i in 0:log(n)) {
-    lambda_grid[i+1] = 2^i #adds power of 2 as a lambda value in grid
-  }
-  
   for (i in 1:n+1) {
-    theta_vector[i] = dyadic_1d(l, y, lambda_grid[i])[2] #creates vector of theta values
+    theta_vector[i] = dyadic_1d(l, y, lambdas[i])[2] #creates vector of theta values
   } #yields error from line 68
   
   return(theta_vector)
@@ -226,11 +226,6 @@ minimize_pe = function(y, l) { #spits out theta vector with minimum prediction e
   theta_hat = create_theta_vector(l, y)
   
   pe_even = vector(mode = "numeric", length = k) # pred. errors for even observations
-  lambdas = vector(mode = "integer", length = m) # lambda grid
-  
-  for (i in 0:log(n)) {
-    lambdas[i+1] = 2^i 
-  }
   
   for(lambda in 1:m) {
     for (i in 1:k) {
