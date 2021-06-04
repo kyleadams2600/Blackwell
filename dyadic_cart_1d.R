@@ -206,7 +206,7 @@ create_theta_vector = function(l, y) {
   n = 2^l
   theta_vector = list()
   
-  for (i in 1:length(y)) {
+  for (i in 1:length(lambdas)) {
     theta_vector[i] = as.vector(dyadic_1d(l, y, lambdas[i])[2]) #creates vector of theta values
   } #yields error from line 68
   
@@ -215,7 +215,7 @@ create_theta_vector = function(l, y) {
 
 #function that minimizes prediction error
 minimize_pe = function(y, l) { #spits out theta vector with minimum prediction error
-  #maybe make it so you don't need l again, but l is the same as the previous function
+
   
   k = length(y)
   n = 2^l
