@@ -225,7 +225,7 @@ minimize_pe = function(y, l) { #spits out theta vector with minimum prediction e
   
   for(lambda in 1:m) {
     y_odd = seq(from = 1, to = n, by = 2) #odd observations
-    # y_odd = y_odd[something]?????
+    y_odd = y_odd[lambda]
     pe_even[i] = sum(y_odd^2)
   }
   
@@ -244,7 +244,7 @@ minimize_pe = function(y, l) { #spits out theta vector with minimum prediction e
   
   for(lambda in 1:m) {
     y_even = seq(from = 2, to = n, by = 2) #even observations
-    # y_even = y_even[something] ?????
+    y_even = y_even[lambda]
       pe_odd[i] = sum(y_even^2)
   }
   
