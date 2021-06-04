@@ -145,7 +145,7 @@ mse = function(iter){
 crossval_odd = function(y) { # y is the list of observations
   
   n = length(y)
-  y_odd = vector(mode = "integer", length = n) # list of odd indexed observations from y
+  y_odd = vector(mode = "numeric", length = n) # list of odd indexed observations from y
   
   for (i in 1:n) {
     if (i %% 2 != 0) { # odd indexes
@@ -166,7 +166,7 @@ crossval_odd = function(y) { # y is the list of observations
 crossval_even = function(y) { # y is the list of observations
   
   n = length(y)
-  y_even = vector(mode = "integer", length = n) # list of even indexed observations from y
+  y_even = vector(mode = "numeric", length = n) # list of even indexed observations from y
   
   for (i in 1:n) {
     if (i == 1) {
@@ -228,14 +228,14 @@ minimize_pe = function(y, l) { #spits out theta vector with minimum prediction e
   
   for(lambda in 1:m) {
     y_odd = seq(from = 1, to = n, by = 2) #odd observations
-    # y_odd = y_odd[something]?????
+    y_odd = y_odd[lambda]
     pe_even[i] = sum(y_odd^2)
   }
   
   theta_odd = create_theta_vector(l, y_odd)
   min_index = which.min(pe_even) # returns index of smallest error
   lambda_odd = lambdas[min_index] # lambda which has the smallest error
-  fit_even = vector(mode = "integer", length = k) # final fit for even observations
+  fit_even = vector(mode = "numeric", length = k) # final fit for even observations
   
   for (i in 1:k) {
     fit_even[i] = theta_odd[[lambda_odd]][i]
@@ -247,14 +247,14 @@ minimize_pe = function(y, l) { #spits out theta vector with minimum prediction e
   
   for(lambda in 1:m) {
     y_even = seq(from = 2, to = n, by = 2) #even observations
-    # y_even = y_even[something] ?????
+    y_even = y_even[lambda]
       pe_odd[i] = sum(y_even^2)
   }
   
   theta_even = create_theta_vector(l, y_even)
   min_odd = which.min(pe_odd)
   lambda_even = lambdas[min_odd]
-  fit_odd = vector(mode = "integer", length = k) # final fit for odd observations
+  fit_odd = vector(mode = "numeric", length = k) # final fit for odd observations
   
   for (i in 1:k) {
     odd_fit[i] = theta_even[[lambda_even]][i]
@@ -262,7 +262,7 @@ minimize_pe = function(y, l) { #spits out theta vector with minimum prediction e
   
   # now just combine odd and even for final fit
   
-  final_fit = vector(mode = "integer", length = k)
+  final_fit = vector(mode = "numeric", length = k)
   
   for (i in 1:k) {
     if (i %% 2 == 1) {
