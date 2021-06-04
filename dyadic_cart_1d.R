@@ -195,8 +195,11 @@ crossval_even = function(y) { # y is the list of observations
   # so number of lambdas will be log(n) (rounded down to nearest int) + 1
 
 #creating lambda grid
-l = 8
+l = 5
 n = 2^l 
+theta = sapply(seq(1:n)/n,f2)
+y = theta + rnorm(2^l,0,sigma)
+
 lambdas = vector(mode = "numeric", length = log(n))
 
 for (i in 0:log(n)) {
