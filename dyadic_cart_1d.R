@@ -71,6 +71,7 @@ for (i in 2:(l + 1)){
     #currentlist[[2]] = templist[[2*(j - 1) + 2]]
     currentlist[[j]] = c(templist[[2*(j - 1) + 1]],templist[[2*(j - 1) + 2]])
     }
+  
     }
 }
 finalpart = currentlist[[1]]
@@ -194,6 +195,8 @@ crossval_even = function(y) { # y is the list of observations
   # so number of lambdas will be log(n) (rounded down to nearest int) + 1
 
 #creating lambda grid
+l = 8
+n = 2^l 
 lambdas = vector(mode = "numeric", length = log(n))
 
 for (i in 0:log(n)) {
@@ -204,7 +207,7 @@ for (i in 0:log(n)) {
 create_theta_vector = function(l, y) {
   # y can be either y_even or y_odd
   n = 2^l
-  theta_vector = list()
+  theta_vector = vector(mode = "numeric", length = length(lambdas))
   
   for (i in 1:length(lambdas)) {
     theta_vector[i] = as.vector(dyadic_1d(l, y, lambdas[i])[2]) #creates vector of theta values
