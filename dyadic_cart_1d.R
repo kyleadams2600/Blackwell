@@ -151,8 +151,7 @@ crossval_odd = function(y) { # y is the list of observations
       y_odd[i] = y[i]
     } else if (i %% 2 == 0 && i != n) { # even indexes
       y_odd[i] = (y[i-1] + y[i+1])/2 # fill in missing observations with average of neighboring observations
-      #message(y[i-1], y[i], y[i+1])
-      #message((y[i-1] + y[i+1])/2)
+      
     } else if (i == n && i %% 2 == 0) { #if last entry and even length, make last entry an average of the first and second to last observation
       y_odd[i] = (y[1] + y[i-1])/2
     }
@@ -178,8 +177,7 @@ crossval_even = function(y) { # y is the list of observations
       } 
       else if (i %% 2 == 1 && i != n) { # even indexes
         y_even[i] = (y[i-1] + y[i+1]) / 2 # fill in odd indexes with average of neighboring observations
-        #message(y[i-1], y[i], y[i+1]) -- bug test
-        #message((y[i-1] + y[i+1])/2)  -- bug test
+      
       } 
       else if (i == n && i %% 2 == 1) { #if last entry and odd length, make last entry an average of the first and second to last observation
         y_even[i] = (y[1] + y[i-1])/2
@@ -195,6 +193,7 @@ crossval_even = function(y) { # y is the list of observations
   # lambda grid = {1, 2^1, 2^2, ... , 2^log(n)}
   # so number of lambdas will be log(n) (rounded down to nearest int) + 1
 
+#creating lambda grid
 lambdas = vector(mode = "numeric", length = log(n))
 
 for (i in 0:log(n)) {
@@ -212,7 +211,6 @@ create_theta_vector = function(l, y) {
   } #yields error from line 68
   
   return(theta_vector)
-  #yields correct dyadic_cart answers, but doesn't change based on lambda, and 1 is always null
 }
 
 #function that minimizes prediction error
