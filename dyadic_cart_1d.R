@@ -254,7 +254,7 @@ sigma = 0.3
 theta = sapply(seq(1:n)/n,f2)
 y = theta + rnorm(2^l,0,sigma)
 
-get_best_fit = function(l,sigma,y) { #returns best fit using all functions above
+get_best_fit = function(l,y) { #returns best fit using all functions above
   n = 2^l
   lamdas = get_lambdas(y)
   cv_y_odd = crossval_odd(y)
