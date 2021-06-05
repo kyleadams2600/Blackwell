@@ -251,22 +251,22 @@ minimize_pe = function(y, l) {
 }
 
 ##convenient variables to keep
-l = 5
+l = 4
 n = 2^l
-sigma = 0.3
+sigma = 5
 theta = sapply(seq(1:n)/n,f2)
 y = theta + rnorm(2^l,0,sigma)
 
 get_best_fit = function(l,y) { #returns best fit using all functions above
   n = 2^l
-  lamdas = get_lambdas(y)
+  lambdas = get_lambdas(y)
   cv_y_odd = crossval_odd(y)
   cv_y_even = crossval_even(y)
   y_even = get_even_obs(y)
   y_odd = get_odd_obs(y)
   theta_hat_even = create_theta_vector(l, cv_y_even)
   theta_hat_odd = create_theta_vector(l, cv_y_odd)
-  minimize_pe(y,l)
+  return(minimize_pe(y,l))
 }
 
 best_fit = get_best_fit(l,y)
