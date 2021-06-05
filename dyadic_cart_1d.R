@@ -273,7 +273,7 @@ minimize_pe = function(y, l) {
 l = 7
 n = 2^l
 sigma = 0.2
-theta = sapply(seq(1:n)/n,f)
+theta = sapply(seq(1:n)/n,f4)
 y = theta + rnorm(2^l,0,sigma); plot(y)
 
 #lambdas = get_lambdas(y); lambdas
@@ -292,6 +292,7 @@ lines(seq(1,n,1),best_fit, type = "p", col = "red") #fit is red
 
 
 ###get info about best fit----
+#currently you have to go back to minimize_pe and run line by line for first 4 vals
 best_lambda_even #best lambda for even observations
 best_lambda_odd #best lambda for odd observations
 pe_even[min_index] #prediction error for even obsv
