@@ -161,6 +161,8 @@ crossval_odd = function(y) { # y is the list of observations
   return(y_odd)
 } 
 
+cv_y_odd = crossval_odd(y)
+
 #Even observations
 
 crossval_even = function(y) { # y is the list of observations
@@ -188,6 +190,8 @@ crossval_even = function(y) { # y is the list of observations
   
   return(y_even)
 } 
+
+cv_y_even = crossval_even(y)
   
 #HOW MANY LAMBDAS?
   # n = sample size = 2^l
@@ -207,8 +211,8 @@ for (i in 0:log(n)) {
 }
 
 #splitting y into y_even and y_odd
-y_odd = seq(from = y[1], to = y[n], by = 2)
-y_even = seq(from = y[2], to = y[n], by = 2)
+OGy_odd = seq(from = y[1], to = y[n], by = 2)
+OGy_even = seq(from = y[2], to = y[n], by = 2)
 
 #function that spits out theta values for each lambda
 create_theta_vector = function(l, y) {
@@ -223,57 +227,45 @@ create_theta_vector = function(l, y) {
   return(theta_vector)
 }
 
+theta_hat_even = create_theta_vector(l,cv_y_even)
+theta_hat_odd = create_theta_vector(l, cv_y_odd)
+#theta_vector[[lambda]][fitted data point]
+
 #function that minimizes prediction error
 minimize_pe = function(y, l) { #spits out theta vector with minimum prediction error
-
   
-  k = length(y)
-  n = 2^l
-  
-  pe_even = vector(mode = "numeric", length = length(lambdas)) # will have prediction error for each lambda,
-  
-  for(lambda in 1:length(lambdas)) {
-    y_odd = y_odd[lambda]
-    pe_even[i] = sum(y_odd^2)
+  pe_odd = vector(mode = "numeric", length = length(lambdas)) # will have prediction error for each lambda,
+  #pe_odd uses even observations and vice versa
+  for(i in 1:length(lambdas)) {
+    pe_odd[i] = sum((y_even - theta_hat_even[[i]])^2)
   }
   
-  theta_odd = create_theta_vector(l, y_odd)
   min_index = which.min(pe_even) # returns index of smallest error
-  lambda_odd = lambdas[min_index] # lambda which has the smallest error
-  fit_even = vector(mode = "numeric", length = k) # final fit for even observations
+  best_lambda_odd = lambdas[min_index] # lambda which has the smallest error
+  fit_even = theta_hat_odd[[min_index]] # final fit for even observations
   
-  for (i in 1:k) {
-    fit_even[i] = theta_odd[[lambda_odd]][i]
-  }
-  
+
   # repeat process with odd and even switched
   
-  pe_odd = vector(mode = "numeric", length = k)
+  pe_even = vector(mode = "numeric", length = length(lambdas))
   
-  for(lambda in 1:m) {
-    y_even = seq(from = 2, to = n, by = 2) #even observations
-    y_even = y_even[lambda]
-      pe_odd[i] = sum(y_even^2)
+  for(i in 1:length(lambdas)) {
+    pe_even[i] = sum((y_odd - theta_hat_odd[[i]])^2)
   }
   
-  theta_even = create_theta_vector(l, y_even)
-  min_odd = which.min(pe_odd)
-  lambda_even = lambdas[min_odd]
-  fit_odd = vector(mode = "numeric", length = k) # final fit for odd observations
-  
-  for (i in 1:k) {
-    odd_fit[i] = theta_even[[lambda_even]][i]
-  }
+  min_index_even = which.min(pe_odd) # returns index of smallest error
+  best_lambda_even = lambdas[min_index_even] # lambda which has the smallest error
+  fit_odd = theta_hat_even[[min_index_even]] # final fit for even observations
   
   # now just combine odd and even for final fit
   
-  final_fit = vector(mode = "numeric", length = k)
+  final_fit = vector(mode = "numeric", length = n)
   
   for (i in 1:k) {
     if (i %% 2 == 1) {
       final_fit[i] = fit_odd[i]
     } else {
-      final_fit[i] = fit_odd[i]
+      final_fit[i] = fit_even[i]
     }
   }
   
