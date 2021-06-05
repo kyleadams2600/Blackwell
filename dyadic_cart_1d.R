@@ -112,6 +112,14 @@ f2 = function(x){
   return(a1 + a2 + a3 + a4)
 }
 
+f3 = function(x) {
+  return(sin(x))
+}
+
+f4 = function(x) {
+  return(x^2)
+}
+
 mse = function(iter){
   grid = seq(5,20,by = 1)
   lambda = 
@@ -128,7 +136,7 @@ mse = function(iter){
     }
 }
 
-#####Algorithm for Two-Fold Cross Validation----
+#####Algorithm Background Code for Two-Fold Cross Validation----
 
 crossval_odd = function(y) { # y is the list of observations
   
@@ -261,15 +269,14 @@ minimize_pe = function(y, l) {
   return(final_fit)
 }
 
-##convenient variables to keep
-l = 3
+##Run the Algorithm----
+l = 7
 n = 2^l
-sigma = 0.3
-theta = sapply(seq(1:n)/n,f2)
-y = theta + rnorm(2^l,0,sigma); y
+sigma = 0.2
+theta = sapply(seq(1:n)/n,f4)
+y = theta + rnorm(2^l,0,sigma); plot(y)
+
 lambdas = get_lambdas(y); lambdas
-
-
 cv_y_odd = crossval_odd(y); cv_y_odd
 cv_y_even = crossval_even(y); cv_y_even
 y_even = get_even_obs(y); y_even
@@ -278,5 +285,7 @@ theta_hat_even = create_theta_vector(l, cv_y_even); theta_hat_even
 theta_hat_odd = create_theta_vector(l, cv_y_odd); theta_hat_odd
 best_fit = minimize_pe(y,l); best_fit
 
-
+###plotting----
+plot(y, ylim = c(-1,1)) #original function is black
+lines(seq(1,n,1),best_fit, type = "p", col = "red") #fit is red
 
