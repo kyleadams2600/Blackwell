@@ -211,8 +211,14 @@ for (i in 0:log(n)) {
 }
 
 #splitting y into y_even and y_odd
-OGy_odd = seq(from = y[1], to = y[n], by = 2)
-OGy_even = seq(from = y[2], to = y[n], by = 2)
+get_odd_obs = function(y) {
+  y_odd = y[seq(1,length(y),2)]
+  return(y_odd)
+}
+get_even_obs = function(y) {
+  y_even = y[seq(2,length(y),2)]
+  return(y_even)
+}
 
 #function that spits out theta values for each lambda
 create_theta_vector = function(l, y) {
@@ -259,15 +265,22 @@ minimize_pe = function(y, l) { #spits out theta vector with minimum prediction e
   
   # now just combine odd and even for final fit
   
-  final_fit = vector(mode = "numeric", length = n)
-  
-  for (i in 1:k) {
-    if (i %% 2 == 1) {
-      final_fit[i] = fit_odd[i]
-    } else {
-      final_fit[i] = fit_even[i]
-    }
-  }
+  final_fit = c(rbind(y_odd, y_even))
   
   return(final_fit)
 }
+
+##assign variables
+l = 5
+n = 2^l
+sigma =
+theta = sapply(seq(1:n)/n,f2)
+y = theta + rnorm(2^l,0,sigma)
+cv_y_odd = crossval_odd(y)
+cv_y_even = crossval_even(y)
+#here split original data into even and odd
+theta_hat_even = create_theta_vector(l,cv_y_even)
+theta_hat_odd = create_theta_vector(l, cv_y_odd)
+y_even = get_even_obs(y)
+y_odd = get_odd_obs(y)
+minimize_pe(y,l)
