@@ -258,7 +258,7 @@ minimize_pe = function(y, l) {
   
   min_index_even = which.min(pe_odd) # returns index of smallest error
   best_lambda_even = lambdas[min_index_even] # lambda which has the smallest error
-  fit_odd = theta_hat_even[[min_index_even]] # final fit for even observations
+  fit_odd = theta_hat_even[[min_index_even]] # final fit for odd observations
   
   # now just combine odd and even for final fit
   
@@ -273,10 +273,11 @@ minimize_pe = function(y, l) {
 l = 7
 n = 2^l
 sigma = 0.2
-theta = sapply(seq(1:n)/n,f4)
+theta = sapply(seq(1:n)/n,f)
 y = theta + rnorm(2^l,0,sigma); plot(y)
 
-lambdas = get_lambdas(y); lambdas
+#lambdas = get_lambdas(y); lambdas
+lambdas = c(1,2,3,4,5,6,7,8,9,10)
 cv_y_odd = crossval_odd(y); cv_y_odd
 cv_y_even = crossval_even(y); cv_y_even
 y_even = get_even_obs(y); y_even
@@ -286,6 +287,13 @@ theta_hat_odd = create_theta_vector(l, cv_y_odd); theta_hat_odd
 best_fit = minimize_pe(y,l); best_fit
 
 ###plotting----
-plot(y, ylim = c(-1,1)) #original function is black
+plot(y) #original function is black
 lines(seq(1,n,1),best_fit, type = "p", col = "red") #fit is red
 
+
+###get info about best fit----
+best_lambda_even #best lambda for even observations
+best_lambda_odd #best lambda for odd observations
+pe_even[min_index] #prediction error for even obsv
+pe_odd[min_index_even] #prediction error for odd obsv
+mean((y - best_fit)^2) #MSE
