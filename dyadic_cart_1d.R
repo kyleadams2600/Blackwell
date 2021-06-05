@@ -243,14 +243,14 @@ minimize_pe = function(y, l) {
   #pe_odd uses even observations and vice versa
   for(i in 1:length(lambdas)) { #length is same as #of lambdas
     #pe_odd[i] = sum((y_even - theta_hat_even[[i]])^2)
-    y_odd = seq(from = 1, to = n, by = 2) #odd observations
+    y_odd = seq(from = 1, to = length(y), by = 2) #odd observations
     y_odd = y_odd[i]
     pe_even[i] = sum(y_odd^2)
   }
   
   for(i in 1:length(lambdas)) {
     #pe_even[i] = sum((y_odd - theta_hat_odd[[i]])^2)
-    y_even = seq(from = 1, to = n, by = 2) #odd observations
+    y_even = seq(from = 2, to = length(y), by = 2) #odd observations
     y_even = y_even[i]
     pe_odd[i] = sum(y_even^2)
   }
