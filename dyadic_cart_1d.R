@@ -206,6 +206,10 @@ for (i in 0:log(n)) {
   lambdas[i+1] = 2^i #adds power of 2 as a lambda value in grid
 }
 
+#splitting y into y_even and y_odd
+y_odd = seq(from = y[1], to = y[n], by = 2)
+y_even = seq(from = y[2], to = y[n], by = 2)
+
 #function that spits out theta values for each lambda
 create_theta_vector = function(l, y) {
   # y can be either y_even or y_odd
@@ -225,12 +229,10 @@ minimize_pe = function(y, l) { #spits out theta vector with minimum prediction e
   
   k = length(y)
   n = 2^l
-  m = as.integer(log(n)) + 1 #length of lambda grid
   
-  pe_even = vector(mode = "numeric", length = k) # pred. errors for even observations
+  pe_even = vector(mode = "numeric", length = length(lambdas)) # will have prediction error for each lambda,
   
-  for(lambda in 1:m) {
-    y_odd = seq(from = 1, to = n, by = 2) #odd observations
+  for(lambda in 1:length(lambdas)) {
     y_odd = y_odd[lambda]
     pe_even[i] = sum(y_odd^2)
   }
