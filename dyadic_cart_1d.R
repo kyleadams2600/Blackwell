@@ -10,76 +10,76 @@
 ###opt,split,sum,sumsq,size are all lists indexed by i the depth of the tree.
 ###For each i they are a vector.
 dyadic_1d = function(l,y,lambda){
-n = 2^l
-opt = list()
-split = list()
-sum = list()
-sumsq = list()
-size = list()
-var = list()
-partition = list()
-##partition is a list of lists. Each vertex has a list which denotes the optimal
-##partition of that vertex. A partition is denoted by a list of two tuples 
-##representing the end points of the intervals.
-for (i in 1:l){
-  opt[[i]] = rep(0,2^{i - 1})
-  split[[i]] = rep(0,2^{i - 1})
-  sum[[i]] = rep(0,2^{i - 1})
-  sumsq[[i]] = rep(0,2^{i - 1})
-  var[[i]] = rep(0,2^{i - 1})
-  depth = l + 2 - i
-  size[[i]] = rep(2^{l-i+1},2^{i - 1})
+  n = 2^l
+  opt = list()
+  split = list()
+  sum = list()
+  sumsq = list()
+  size = list()
+  var = list()
+  partition = list()
+  ##partition is a list of lists. Each vertex has a list which denotes the optimal
+  ##partition of that vertex. A partition is denoted by a list of two tuples 
+  ##representing the end points of the intervals.
+  for (i in 1:l){
+    opt[[i]] = rep(0,2^{i - 1})
+    split[[i]] = rep(0,2^{i - 1})
+    sum[[i]] = rep(0,2^{i - 1})
+    sumsq[[i]] = rep(0,2^{i - 1})
+    var[[i]] = rep(0,2^{i - 1})
+    depth = l + 2 - i
+    size[[i]] = rep(2^{l-i+1},2^{i - 1})
   }
   
-
-opt[[l + 1]] = rep(lambda,2^{l})
+  
+  opt[[l + 1]] = rep(lambda,2^{l})
   split[[l + 1]] = rep(0,2^{l})
   sum[[l + 1]] = y
   sumsq[[l + 1]] = y^2
   size[[l + 1]] = rep(1,n)
   var[[l + 1]] = rep(0,n)
   
-##defining the current list. It is a list of lists. 
-currentlist = list()
-for (i in 1:n){
-currentlist[[i]] = list(c(i,i))
-#currentlist[[i]][1] = c(i,i)
-}
-####Figure out how to remove for loop here. Or merge this with the bottom
-##up pass.
-
-##bottom up pass
-for (i in 2:(l + 1)){
-  depth = l + 2 - i
-  templist = currentlist
-  currentlist = NULL
+  ##defining the current list. It is a list of lists. 
   currentlist = list()
-  for (j in 1:(2^{depth - 1})){
-    childdep = depth + 1
-    lchild = 2*(j - 1) + 1
-    rchild = 2*(j - 1) + 2
-    sum[[depth]][j] = sum[[depth + 1]][lchild] + sum[[depth + 1]][rchild]
-    sumsq[[depth]][j] = sumsq[[depth + 1]][lchild] + sumsq[[depth + 1]][rchild]
-    var[[depth]][j] = sumsq[[depth]][j] - (sum[[depth]][j])^2/size[[depth]][j]
-    temp = opt[[depth + 1]][lchild] + opt[[depth + 1]][rchild]
-    opt[[depth]][j] = min(var[[depth]][j] + lambda,temp)
-    currentlist[[j]] = list()
-    currentlist[[j]][[1]] = c((n/(2^{depth - 1}))*(j - 1) + 1,(n/(2^{depth - 1}))*(j)) 
-    if (var[[depth]][j] + lambda > temp){
-    split[[depth]][j] = 1
-    #currentlist[[j]][[1]] = templist[[2*(j - 1) + 1]]
-    #currentlist[[2]] = templist[[2*(j - 1) + 2]]
-    currentlist[[j]] = c(templist[[2*(j - 1) + 1]],templist[[2*(j - 1) + 2]])
-    }
+  for (i in 1:n){
+    currentlist[[i]] = list(c(i,i))
+    #currentlist[[i]][1] = c(i,i)
+  }
+  ####Figure out how to remove for loop here. Or merge this with the bottom
+  ##up pass.
   
+  ##bottom up pass
+  for (i in 2:(l + 1)){
+    depth = l + 2 - i
+    templist = currentlist
+    currentlist = NULL
+    currentlist = list()
+    for (j in 1:(2^{depth - 1})){
+      childdep = depth + 1
+      lchild = 2*(j - 1) + 1
+      rchild = 2*(j - 1) + 2
+      sum[[depth]][j] = sum[[depth + 1]][lchild] + sum[[depth + 1]][rchild]
+      sumsq[[depth]][j] = sumsq[[depth + 1]][lchild] + sumsq[[depth + 1]][rchild]
+      var[[depth]][j] = sumsq[[depth]][j] - (sum[[depth]][j])^2/size[[depth]][j]
+      temp = opt[[depth + 1]][lchild] + opt[[depth + 1]][rchild]
+      opt[[depth]][j] = min(var[[depth]][j] + lambda,temp)
+      currentlist[[j]] = list()
+      currentlist[[j]][[1]] = c((n/(2^{depth - 1}))*(j - 1) + 1,(n/(2^{depth - 1}))*(j)) 
+      if (var[[depth]][j] + lambda > temp){
+        split[[depth]][j] = 1
+        #currentlist[[j]][[1]] = templist[[2*(j - 1) + 1]]
+        #currentlist[[2]] = templist[[2*(j - 1) + 2]]
+        currentlist[[j]] = c(templist[[2*(j - 1) + 1]],templist[[2*(j - 1) + 2]])
+      }
+      
     }
-}
-finalpart = currentlist[[1]]
-output = rep(0,n)
-for (i in 1:length(finalpart)){
-  output[finalpart[[i]][1]:finalpart[[i]][2]] = mean(y[finalpart[[i]][1]:finalpart[[i]][2]])
-}
-return(list(finalpart,output))
+  }
+  finalpart = currentlist[[1]]
+  output = rep(0,n)
+  for (i in 1:length(finalpart)){
+    output[finalpart[[i]][1]:finalpart[[i]][2]] = mean(y[finalpart[[i]][1]:finalpart[[i]][2]])
+  }
+  return(list(finalpart,output))
 }
 #########################Bottom up pass done######################
 ##Main thing: The optimal partition is being computed bottom up. 
@@ -93,7 +93,7 @@ return(list(finalpart,output))
 ind = function(x,a,b){
   if (x > a && x <= b){
     return(1)
-    }
+  }
   else {
     return(0)
   }
@@ -115,16 +115,16 @@ f2 = function(x){
 mse = function(iter){
   grid = seq(5,20,by = 1)
   lambda = 
-  for (l in grid){
-    n = 2^l
-    theta = sapply(seq(1:n)/n,f2)
-    for (j in 1:iter){
-    y = theta + rnorm(2^l,0,sigma) #theta is signal, rnorm is noise
-    #ans = dyadic_1d(l,y,lambda[l])[[2]]
-    ans = dyadic_1d(l,y,lambda)[[2]]
-    mse[j] = mean((theta - ans)^2)
-    }
-    return(mse)
+    for (l in grid){
+      n = 2^l
+      theta = sapply(seq(1:n)/n,f2)
+      for (j in 1:iter){
+        y = theta + rnorm(2^l,0,sigma) #theta is signal, rnorm is noise
+        #ans = dyadic_1d(l,y,lambda[l])[[2]]
+        ans = dyadic_1d(l,y,lambda)[[2]]
+        mse[j] = mean((theta - ans)^2)
+      }
+      return(mse)
     }
 }
 
@@ -168,7 +168,7 @@ crossval_even = function(y) { # y is the list of observations
       } 
       else if (i %% 2 == 1 && i != n) { # even indexes
         y_even[i] = (y[i-1] + y[i+1]) / 2 # fill in odd indexes with average of neighboring observations
-      
+        
       } 
       else if (i == n && i %% 2 == 1) { #if last entry and odd length, make last entry an average of the first and second to last observation
         y_even[i] = (y[1] + y[i-1])/2
@@ -179,11 +179,11 @@ crossval_even = function(y) { # y is the list of observations
   return(y_even)
 } 
 
-  
+
 #HOW MANY LAMBDAS?
-  # n = sample size = 2^l
-  # lambda grid = {1, 2^1, 2^2, ... , 2^log(n)}
-  # so number of lambdas will be log(n) (rounded down to nearest int) + 1
+# n = sample size = 2^l
+# lambda grid = {1, 2^1, 2^2, ... , 2^log(n)}
+# so number of lambdas will be log(n) (rounded down to nearest int) + 1
 
 #gets lambdas by powers of 2 until log(n)
 get_lambdas = function(y) {
@@ -219,9 +219,15 @@ create_theta_vector = function(l, y) {
 #function that minimizes prediction error, returns final fit after combining even and odd
 minimize_pe = function(y, l) { 
   
-    #pe_odd uses even observations and vice versa
+  pe_odd = c(0)
+  pe_even = c(0)
+  #pe_odd uses even observations and vice versa
   for(i in 1:length(lambdas)) { #length is same as #of lambdas
     pe_odd[i] = sum((y_even - theta_hat_even[[i]])^2)
+  }
+  
+  for(i in 1:length(lambdas)) {
+    pe_even[i] = sum((y_odd - theta_hat_odd[[i]])^2)
   }
   
   min_index = which.min(pe_even) # returns index of smallest error
@@ -230,13 +236,10 @@ minimize_pe = function(y, l) {
   
   # repeat process with odd and even switched
   
-  for(i in 1:length(lambdas)) {
-    pe_even[i] = sum((y_odd - theta_hat_odd[[i]])^2)
-  }
   
   min_index_even = which.min(pe_odd) # returns index of smallest error
   best_lambda_even = lambdas[min_index_even] # lambda which has the smallest error
-  fit_odd = theta_hat_even[[min_index_even]] # final fit for even observations
+  fit_odd = theta_hat_even[[min_index_even]] # final fit for odd observations
   
   # now just combine odd and even for final fit
   
@@ -261,7 +264,10 @@ get_best_fit = function(l,y) { #returns best fit using all functions above
   cv_y_even = crossval_even(y)
   y_even = get_even_obs(y)
   y_odd = get_odd_obs(y)
-  theta_hat_even = create_theta_vector(l,cv_y_even)
+  theta_hat_even = create_theta_vector(l, cv_y_even)
   theta_hat_odd = create_theta_vector(l, cv_y_odd)
   minimize_pe(y,l)
 }
+
+best_fit = get_best_fit(l,y)
+
