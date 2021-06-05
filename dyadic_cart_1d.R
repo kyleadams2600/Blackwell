@@ -187,6 +187,7 @@ crossval_even = function(y) { # y is the list of observations
 
 #gets lambdas by powers of 2 until log(n)
 get_lambdas = function(y) {
+  lambdas = c(0)
   for (i in 0:log(length(y))) {
     lambdas[i+1] = 2^i 
   }
@@ -218,9 +219,19 @@ create_theta_vector = function(l, y) {
 
 #function that minimizes prediction error, returns final fit after combining even and odd
 minimize_pe = function(y, l) { 
-  
   pe_odd = c(0)
   pe_even = c(0)
+  min_index = 1
+  best_lambda_odd = 1
+  fit_even = c(0)
+  min_index_even = 1
+  best_lambda_even = 1
+  fit_odd = c(0)
+  final_fit_odd = c(0)
+  final_fit_even = c(0)
+  final_fit = c(0)
+  
+  
   #pe_odd uses even observations and vice versa
   for(i in 1:length(lambdas)) { #length is same as #of lambdas
     pe_odd[i] = sum((y_even - theta_hat_even[[i]])^2)
@@ -239,7 +250,7 @@ minimize_pe = function(y, l) {
   
   min_index_even = which.min(pe_odd) # returns index of smallest error
   best_lambda_even = lambdas[min_index_even] # lambda which has the smallest error
-  fit_odd = theta_hat_even[[min_index_even]] # final fit for odd observations
+  fit_odd = theta_hat_even[[min_index_even]] # final fit for even observations
   
   # now just combine odd and even for final fit
   
@@ -251,23 +262,21 @@ minimize_pe = function(y, l) {
 }
 
 ##convenient variables to keep
-l = 4
+l = 3
 n = 2^l
-sigma = 5
+sigma = 0.3
 theta = sapply(seq(1:n)/n,f2)
-y = theta + rnorm(2^l,0,sigma)
+y = theta + rnorm(2^l,0,sigma); y
+lambdas = get_lambdas(y); lambdas
 
-get_best_fit = function(l,y) { #returns best fit using all functions above
-  n = 2^l
-  lambdas = get_lambdas(y)
-  cv_y_odd = crossval_odd(y)
-  cv_y_even = crossval_even(y)
-  y_even = get_even_obs(y)
-  y_odd = get_odd_obs(y)
-  theta_hat_even = create_theta_vector(l, cv_y_even)
-  theta_hat_odd = create_theta_vector(l, cv_y_odd)
-  return(minimize_pe(y,l))
-}
 
-best_fit = get_best_fit(l,y)
+cv_y_odd = crossval_odd(y); cv_y_odd
+cv_y_even = crossval_even(y); cv_y_even
+y_even = get_even_obs(y); y_even
+y_odd = get_odd_obs(y); y_odd
+theta_hat_even = create_theta_vector(l, cv_y_even); theta_hat_even
+theta_hat_odd = create_theta_vector(l, cv_y_odd); theta_hat_odd
+best_fit = minimize_pe(y,l); best_fit
+
+
 
