@@ -149,8 +149,8 @@ crossval_odd = function(y) { # y is the list of observations
     } else if (i %% 2 == 0 && i != n) { # even indexes
       y_odd[i] = (y[i-1] + y[i+1])/2 # fill in missing observations with average of neighboring observations
       
-    } else if (i == n && i %% 2 == 0) { #if last entry and even length, make last entry an average of the first and second to last observation
-      y_odd[i] = (y[1] + y[i-1])/2
+    } else if (i == n && i %% 2 == 0) { #make last entry same as previous average
+      y_odd[i] = y_odd[i-2] 
     }
   }
   
@@ -168,7 +168,7 @@ crossval_even = function(y) { # y is the list of observations
   
   for (i in 1:n) {
     if (i == 1) {
-      y_even[i] = (y[i+1] + y[n-1]) / 2 #fills in first entry
+      y_even[i] = y[2] + y[4] / 2 #fills in first entry, makes same as third
     }
     else {
       if (i %% 2 != 1) { # even indexes
@@ -178,9 +178,9 @@ crossval_even = function(y) { # y is the list of observations
         y_even[i] = (y[i-1] + y[i+1]) / 2 # fill in odd indexes with average of neighboring observations
         
       } 
-      else if (i == n && i %% 2 == 1) { #if last entry and odd length, make last entry an average of the first and second to last observation
-        y_even[i] = (y[1] + y[i-1])/2
-      }
+      #else if (i == n && i %% 2 == 1) { #if last entry and odd length, make last entry an average of the first and second to last observation
+      # y_even[i] = (y[1] + y[i-1])/2
+      #} #this won't ever enter because
     }
   }
   
