@@ -273,7 +273,7 @@ minimize_pe = function(y, l) {
 l = 7
 n = 2^l
 sigma = 0.2
-theta = sapply(seq(1:n)/n,f4)
+theta = sapply(seq(1:n)/n,f)
 y = theta + rnorm(2^l,0,sigma); plot(y)
 
 #lambdas = get_lambdas(y); lambdas
