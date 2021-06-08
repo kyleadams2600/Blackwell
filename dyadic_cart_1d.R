@@ -180,7 +180,7 @@ crossval_even = function(y) { # y is the list of observations
       } 
       #else if (i == n && i %% 2 == 1) { #if last entry and odd length, make last entry an average of the first and second to last observation
       # y_even[i] = (y[1] + y[i-1])/2
-      #} #this won't ever enter because
+      #} #this won't ever enter because in our case y is always even length
     }
   }
   
