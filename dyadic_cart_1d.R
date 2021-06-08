@@ -120,6 +120,25 @@ f4 = function(x) {
   return(x^2)
 }
 
+f5 = function(x){
+  a1 = 2*ind(x,0.2,0.4)
+  a2 = 5*ind(x,0.4,0.6)
+  a3 = ind(x,0.6,0.8)
+  a4 = 4*ind(x,0.8,0.9)
+  a5 = 3*ind(x, 0.9, 1)
+  return(a1 + a2 + a3 + a4 +a5)
+}
+
+f6 = function(x) {
+  a1 = 3*ind(x, 0.1, 0.2)
+  a2 = 2*ind(x, 0.2, 0.4)
+  a3 = 5*ind(x, 0.4, 0.5)
+  a4 = ind(x, 0.5, 0.6)
+  a5 = 4*ind(x, 0.6, 0.75)
+  a6 = 2*ind(x, 0.75, 0.9)
+  a7 = 3*ind(x, 0.9, 1)
+}
+
 mse = function(iter){
   grid = seq(5,20,by = 1)
   lambda = 
@@ -138,6 +157,7 @@ mse = function(iter){
 
 #####Algorithm Background Code for Two-Fold Cross Validation----
 
+#this function takes a vector y, and uses the odd observations, and fills the even elements with the average of neighbors
 crossval_odd = function(y) { # y is the list of observations
   
   n = length(y)
@@ -160,7 +180,7 @@ crossval_odd = function(y) { # y is the list of observations
 cv_y_odd = crossval_odd(y)
 
 #Even observations
-
+#does the same thing as crossval_odd, with even and odd reversed
 crossval_even = function(y) { # y is the list of observations
   
   n = length(y)
@@ -168,7 +188,7 @@ crossval_even = function(y) { # y is the list of observations
   
   for (i in 1:n) {
     if (i == 1) {
-      y_even[i] = y[2] + y[4] / 2 #fills in first entry, makes same as third
+      y_even[i] = (y[2] + y[4]) / 2 #fills in first entry, makes same as third
     }
     else {
       if (i %% 2 != 1) { # even indexes
@@ -202,7 +222,7 @@ get_lambdas = function(y) {
   return(lambdas)
 }
 
-#splitting y into y_even and y_odd
+#splitting y into y_even and y_odd to later calculate pe_even and pe_odd
 get_odd_obs = function(y) {
   y_odd = y[seq(1,length(y),2)]
   return(y_odd)
@@ -213,6 +233,8 @@ get_even_obs = function(y) {
 }
 
 #function that spits out theta values for each lambda
+#will return a vector for each lambda, calls like "fitteddatapoint = theta_vector[[lambda]][datapoint]"
+#or can get entire thetahat with thetahat = theta_vector[lambda]
 create_theta_vector = function(l, y) {
   # y can be either y_even or y_odd
   n = 2^l
@@ -220,13 +242,14 @@ create_theta_vector = function(l, y) {
   
   for (i in 1:length(lambdas)) {
     theta_vector[i] = as.vector(dyadic_1d(l, y, lambdas[i])[2]) #creates vector of theta values
-  } #theta_vector[[lambda]][fitted data point]
+  } 
   
   return(theta_vector)
 }
 
 #function that minimizes prediction error, returns final fit after combining even and odd
 minimize_pe = function(y, l) { 
+  #initiliazations
   pe_odd = c(0)
   pe_even = c(0)
   min_index = 1
@@ -242,21 +265,21 @@ minimize_pe = function(y, l) {
   
   #pe_odd uses even observations and vice versa
   for(i in 1:length(lambdas)) { #length is same as #of lambdas
-    pe_odd[i] = sum((y_even - theta_hat_even[[i]])^2)
+    pe_odd[i] = sum((y_even - theta_hat_even[[i]])^2) #sums squared difference of even observations of y and even observations of thetahat
     #y_even = y[c(TRUE, FALSE)] #even observations
     #y_even = y_even[i]
     #pe_odd[i] = sum(y_even^2)
   }
   
   for(i in 1:length(lambdas)) {
-    pe_even[i] = sum((y_odd - theta_hat_odd[[i]])^2)
+    pe_even[i] = sum((y_odd - theta_hat_odd[[i]])^2) #same as a above but reversed
     #y_odd = y[c(FALSE, TRUE)] #odd observations
     #y_odd = y_odd[i]
     #pe_even[i] = sum(y_odd^2)
   }
   
-  min_index = which.min(pe_even) # returns index of smallest error
-  best_lambda_odd = lambdas[min_index] # lambda which has the smallest error
+  min_index = which.min(pe_even) # returns index of smallest prediction error
+  best_lambda_odd = lambdas[min_index] # returns lambda which has the smallest error
   fit_even = theta_hat_odd[[min_index]] # final fit for even observations
   
   # repeat process with odd and even switched
@@ -270,20 +293,20 @@ minimize_pe = function(y, l) {
   
   final_fit_odd = fit_odd[seq(1,length(fit_odd),2)] #just the odd obsv
   final_fit_even = fit_even[seq(2,length(fit_even),2)] #just the even obsv
-  final_fit = c(rbind(final_fit_odd, final_fit_even))
+  final_fit = c(rbind(final_fit_odd, final_fit_even)) #combining even and odd observations
   
   return(final_fit)
 }
 
 ##Run the Algorithm----
-l = 7
+l = 10
 n = 2^l
 sigma = 0.2
-theta = sapply(seq(1:n)/n,f3)
+theta = sapply(seq(1:n)/n,f)
 y = theta + rnorm(2^l,0,sigma); plot(y)
 
-#lambdas = get_lambdas(y); lambdas
-lambdas = c(1,2,3,4,5,6,7,8,9,10)
+lambdas = get_lambdas(y); lambdas
+#lambdas = c(4, 4.5, 5, 5.5, 6)
 cv_y_odd = crossval_odd(y); cv_y_odd
 cv_y_even = crossval_even(y); cv_y_even
 y_even = get_even_obs(y); y_even
@@ -293,8 +316,15 @@ theta_hat_odd = create_theta_vector(l, cv_y_odd); theta_hat_odd
 best_fit = minimize_pe(y,l); best_fit
 
 ###plotting----
-plot(y) #original function is black
+plot(y, main = "Best Fit mapped onto Y") #original function is black
 lines(seq(1,n,1),best_fit, type = "p", col = "red") #fit is red
+
+
+
+
+
+
+
 
 
 ###get info about best fit----
