@@ -222,15 +222,6 @@ get_lambdas = function(y) {
   return(lambdas)
 }
 
-#splitting y into y_even and y_odd to later calculate pe_even and pe_odd
-get_odd_obs = function(y) {
-  y_odd = y[seq(1,length(y),2)]
-  return(y_odd)
-}
-get_even_obs = function(y) {
-  y_even = y[seq(2,length(y),2)]
-  return(y_even)
-}
 
 #function that spits out theta values for each lambda
 #will return a vector for each lambda, calls like "fitteddatapoint = theta_vector[[lambda]][datapoint]"
@@ -265,29 +256,29 @@ minimize_pe = function(y, l) {
   
   #pe_odd uses even observations and vice versa
   for(i in 1:length(lambdas)) { #length is same as #of lambdas
-    pe_odd[i] = sum((y_even - theta_hat_even[[i]])^2) #sums squared difference of even observations of y and even observations of thetahat
+    pe_odd[i] = sum((y[seq(2,length(y),2)] - theta_hat_odd[[i]][seq(2,length(y),2)])^2) #sums squared difference of even observations of y and even observations of thetahat
     #y_even = y[c(TRUE, FALSE)] #even observations
     #y_even = y_even[i]
     #pe_odd[i] = sum(y_even^2)
   }
   
   for(i in 1:length(lambdas)) {
-    pe_even[i] = sum((y_odd - theta_hat_odd[[i]])^2) #same as a above but reversed
+    pe_even[i] = sum((y[seq(1,length(y),2)] - theta_hat_even[[i]][seq(1,length(y),2)])^2) #same as a above but reversed
     #y_odd = y[c(FALSE, TRUE)] #odd observations
     #y_odd = y_odd[i]
     #pe_even[i] = sum(y_odd^2)
   }
   
-  min_index = which.min(pe_even) # returns index of smallest prediction error
-  best_lambda_odd = lambdas[min_index] # returns lambda which has the smallest error
-  fit_even = theta_hat_odd[[min_index]] # final fit for even observations
+  min_index_even = which.min(pe_even) # returns index of smallest prediction error
+  best_lambda_even = lambdas[min_index_even] # returns lambda which has the smallest error
+  fit_even = theta_hat_even[[min_index_even]] # final fit for even observations
   
   # repeat process with odd and even switched
   
   
-  min_index_even = which.min(pe_odd) # returns index of smallest error
-  best_lambda_even = lambdas[min_index_even] # lambda which has the smallest error
-  fit_odd = theta_hat_even[[min_index_even]] # final fit for odd observations
+  min_index_odd = which.min(pe_odd) # returns index of smallest error
+  best_lambda_odd = lambdas[min_index_odd] # lambda which has the smallest error
+  fit_odd = theta_hat_odd[[min_index_odd]] # final fit for odd observations
   
   # now just combine odd and even for final fit
   
@@ -299,21 +290,19 @@ minimize_pe = function(y, l) {
 }
 
 ##Run the Algorithm----
-l = 10
+l = 7
 n = 2^l
 sigma = 0.2
-theta = sapply(seq(1:n)/n,f)
+theta = sapply(seq(1:n)/n,f4)
 y = theta + rnorm(2^l,0,sigma); plot(y)
 
-lambdas = get_lambdas(y); lambdas
-#lambdas = c(4, 4.5, 5, 5.5, 6)
-cv_y_odd = crossval_odd(y); cv_y_odd
-cv_y_even = crossval_even(y); cv_y_even
-y_even = get_even_obs(y); y_even
-y_odd = get_odd_obs(y); y_odd
-theta_hat_even = create_theta_vector(l, cv_y_even); theta_hat_even
-theta_hat_odd = create_theta_vector(l, cv_y_odd); theta_hat_odd
-best_fit = minimize_pe(y,l); best_fit
+#lambdas = get_lambdas(y); #lambdas
+lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9)
+cv_y_odd = crossval_odd(y);# cv_y_odd
+cv_y_even = crossval_even(y);# cv_y_even
+theta_hat_even = create_theta_vector(l, cv_y_even);# theta_hat_even
+theta_hat_odd = create_theta_vector(l, cv_y_odd);# theta_hat_odd
+best_fit = minimize_pe(y,l);# best_fit
 
 ###plotting----
 plot(y, main = "Best Fit mapped onto Y") #original function is black
@@ -334,3 +323,4 @@ best_lambda_odd #best lambda for odd observations
 pe_even[min_index] #prediction error for even obsv
 pe_odd[min_index_even] #prediction error for odd obsv
 mean((y - best_fit)^2) #MSE
+
