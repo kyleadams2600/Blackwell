@@ -216,7 +216,7 @@ crossval_even = function(y) { # y is the list of observations
 #gets lambdas by powers of 2 until log(n)
 get_lambdas = function(y) {
   lambdas = c(0)
-  for (i in 0:log(length(y))) {
+  for (i in 0:log(length(y), base = 2)) {
     lambdas[i+1] = 2^i 
   }
   return(lambdas)
@@ -293,11 +293,11 @@ minimize_pe = function(y, l) {
 l = 7
 n = 2^l
 sigma = 0.2
-theta = sapply(seq(1:n)/n,f4)
+theta = sapply(seq(1:n)/n,f3)
 y = theta + rnorm(2^l,0,sigma); plot(y)
 
-#lambdas = get_lambdas(y); #lambdas
-lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9)
+lambdas = get_lambdas(y); #lambdas
+#lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9)
 cv_y_odd = crossval_odd(y);# cv_y_odd
 cv_y_even = crossval_even(y);# cv_y_even
 theta_hat_even = create_theta_vector(l, cv_y_even);# theta_hat_even
