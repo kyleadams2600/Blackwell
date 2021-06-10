@@ -333,20 +333,26 @@ make_t_grid = function(y) {
   return(t_grid)
 }
 
-make_new_data = function(y, t) { #makes new vector, 1 if y <= t, 0 if not
+make_new_data = function(y) { #makes new vector, 1 if y <= t, 0 if not
   
-  w = vector(mode = "integer", length = length(y))
+  w = list()
+  t_grid = make_t_grid(y)
+  temp_y = c(0)
   
-  for (i in 1:length(y)) {
-    if (y[i] <= t) {
-      w[i] = 1
-    } else {
-      w[i] = 0
+  for (t in 1:length(t_grid)) {
+    for (i in 1:length(y)) {
+      if (y[i] <= t_grid[t]) {
+        temp_y[i] = 1
+      } else {
+        temp_y[i] = 0
+      }
     }
+    w[[t]] = temp_y
   }
-  
   return(w)
 }
+
+
 
 t = y[256] #manually change
 w = make_new_data(y, t)
