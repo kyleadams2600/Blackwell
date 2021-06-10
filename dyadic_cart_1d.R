@@ -323,10 +323,11 @@ mean((y - best_fit)^2) #MSE
 ####Estimating CDFs----
 
 make_t_grid = function(y) {
-  t_grid = c(0) 
+  t_grid = vector(mode = "numeric", length = length(y))
+  y_sorted = sort(y, decreasing = FALSE)
   
   for (i in 1:length(y)) {
-    t_grid[i] = y[i]
+    t_grid[i] = y_sorted[i]
   }
   
   return(t_grid)
@@ -339,11 +340,11 @@ make_new_data = function(y, t) { #makes new vector, 1 if y <= t, 0 if not
   for (i in 1:length(y)) {
     if (y[i] <= t) {
       w[i] = 1
-    }
-    else {
+    } else {
       w[i] = 0
     }
   }
+  
   return(w)
 }
 
