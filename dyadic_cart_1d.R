@@ -294,14 +294,14 @@ minimize_pe = function(y, l) {
 }
 
 ##Run the Algorithm----
-l = 9
+l = 10
 n = 2^l
-sigma = 0.2
+sigma = 0.4
 theta = sapply(seq(1:n)/n,f4)
 y = theta + rnorm(2^l,0,sigma); plot(y)
 
-#lambdas = get_lambdas(y); #lambdas
-lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9)
+lambdas = get_lambdas(y); #lambdas
+#lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9)
 cv_y_odd = crossval_odd(y);# cv_y_odd
 cv_y_even = crossval_even(y);# cv_y_even
 theta_hat_even = create_theta_vector(l, cv_y_even);# theta_hat_even
@@ -346,23 +346,40 @@ make_new_data = function(y) { #makes new vector, 1 if y <= t, 0 if not
       } else {
         temp_y[i] = 0
       }
+
     }
-    w[[t]] = temp_y
+  w[[t]] = (temp_y)
   }
   return(w)
 }
+  
 
+##to run----
+l = 6
+n = 2^l
+sigma = 0.5
+theta = sapply(seq(1:n)/n,f4)
+y = theta + rnorm(2^l,0,sigma); plot(y)
+t = 25 #must be between 1 and n
 
+#get_f_estimate = function(y,t) {
 
-t = y[256] #manually change
-w = make_new_data(y, t)
+w = make_new_data(y)
 lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9)
-cv_w_odd = crossval_odd(w);# cv_y_odd
-cv_w_even = crossval_even(w);# cv_y_even
-theta_hat_even = create_theta_vector(l, cv_w_even);# theta_hat_even
-theta_hat_odd = create_theta_vector(l, cv_w_odd);# theta_hat_odd
-best_fit = minimize_pe(w,l);# best_fit
+t_grid = make_t_grid(y)
 
-###plotting----
-plot(w, main = "Best Fit mapped onto Y") #original function is black
-lines(seq(1,n,1),best_fit, type = "p", col = "red") #fit is red
+cv_w_odd = crossval_odd(w[[t]]); #cv_w_odd
+cv_w_even = crossval_even(w[[t]]); #cv_w_even
+theta_hat_even = create_theta_vector(l, cv_w_even); #theta_hat_even
+theta_hat_odd = create_theta_vector(l, cv_w_odd); #theta_hat_odd
+best_fit = minimize_pe(w[[t]],l); #best_fit
+
+plot(w[[t]], main = paste("t = ",t_grid[t])) #original function is black
+lines(seq(1,n,1),best_fit, type = "p", col = "purple") #fit is red
+mse = sum((w[[t]] - best_fit)^2); mse
+#return(best_fit)
+#}
+
+
+
+
