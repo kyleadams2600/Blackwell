@@ -383,41 +383,41 @@ mse = sum((w[[t]] - best_fit)^2); mse
 
 
 ###plotting cdfs and using matrix
-l = 3
+l = 4
 n = 2^l
-sigma = 0.5
+sigma = 0.3
 theta = sapply(seq(1:n)/n,f4)
 y = theta + rnorm(2^l,0,sigma); plot(y)
 #y = theta +rnorm(2^l, 0, 0.2)
 
 fit_cdf = function(y) {
   
-  matrix = matrix(nrow = length(y), ncol = length(y))
+  w_matrix = matrix(nrow = length(y), ncol = length(y))
   w = make_new_data(y)
   lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9)
   t_grid = make_t_grid(y)
   
   for (t in 1:length(t_grid)) {
-  
+    
     cv_w_odd = crossval_odd(w[[t]]); #cv_w_odd
     cv_w_even = crossval_even(w[[t]]); #cv_w_even
     theta_hat_even = create_theta_vector(l, cv_w_even); #theta_hat_even
     theta_hat_odd = create_theta_vector(l, cv_w_odd); #theta_hat_odd
     best_fit = minimize_pe(w[[t]],l); #best_fit
-  
-    matrix[t, ] = best_fit #each row represents yhat based on t_grid[t]
+    
+    w_matrix[t, ] = best_fit #each row represents yhat based on t_grid[t]
     #matrix[t, ] = best fit for t'th entry in t_grid, matrix [ ,X] is the cdf of xX
     # so matrix [ ,5] is the cdf of x5, based on each t in t_grid
   }
-  return(matrix) #this doesnt work but the function works line by line
+  return(w_matrix) #this doesnt work but the function works line by line
 }
 
 #plots cdfs
-plot(t_grid[seq(1,n,1)], matrix[, 1], ylim = c(0,1), type = "l")
+plot(t_grid[seq(1,n,1)], w_matrix[, 1], ylim = c(0,1), type = "l")
 
 for (t in 2:length(t_grid)) {
-  lines(t_grid[seq(1,n,1)], matrix[, t], ylim = c(0,1), type = "l")
+  lines(t_grid[seq(1,n,1)], w_matrix[, t], ylim = c(0,1), type = "l")
 }
 
-matrix
+w_matrix
 
