@@ -346,9 +346,9 @@ make_new_data = function(y) { #makes new vector, 1 if y <= t, 0 if not
       } else {
         temp_y[i] = 0
       }
-
+      
     }
-  w[[t]] = (temp_y)
+    w[[t]] = (temp_y)
   }
   return(w)
 }
@@ -374,8 +374,10 @@ new_data_given_t = function(y,t) {
 l = 5
 n = 2^l
 sigma = 0.5
-theta = sapply(seq(1:n)/n,f3)
-y = theta + rnorm(2^l,0,sigma); plot(y)
+x = runif(n, min = 0, max = 1)
+mean_y = sapply(x, f3)
+sigma_y = sapply(x, f4)
+y = rnorm(2^l,mean_y,sigma_y); plot(y)
 t = 2^4 #must be between 1 and n
 
 #get_f_estimate = function(y,t) {
@@ -413,6 +415,7 @@ mse = sum((w3 - best_fit)^2); mse
 #####
 
 ###plotting cdfs and using matrix
+<<<<<<< HEAD
 l = 5
 n = 2^l
 sigma = 0.3
@@ -421,6 +424,16 @@ sigma = 0.3
 theta = sapply(seq(1:n)/n,f2)
 y = theta + rnorm(2^l,0,sigma); plot(y)
 #y = theta +rnorm(2^l, 0, 0.2)
+=======
+l = 4
+n = 2^l
+#sigma = 0.3
+x = runif(n, min = 0, max = 1) #generate uniform distribution for x
+mean_y = sapply(x,f3) #f3 is applied to the uniform distribution x
+sigma_y = sapply(x,f4)
+#theta = sapply(seq(1:n)/n,f3)
+y = rnorm(2^l,mean_y,sigma_y); plot(y)
+>>>>>>> 9f2243a9869369f69e52a931875e7ca77ea8236c
 
 fit_cdf = function(y) {
   
