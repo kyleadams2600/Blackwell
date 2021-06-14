@@ -413,12 +413,12 @@ mse = sum((w3 - best_fit)^2); mse
 #####
 
 ###plotting cdfs and using matrix
-l = 3
+l = 5
 n = 2^l
 sigma = 0.3
 #x = runif(n, min = 0, max = 1) #generate uniform distribution for x
 #theta = sapply(x,f4) #f4 is applied to the uniform distribution x
-theta = sapply(seq(1:n)/n,f3)
+theta = sapply(seq(1:n)/n,f2)
 y = theta + rnorm(2^l,0,sigma); plot(y)
 #y = theta +rnorm(2^l, 0, 0.2)
 
@@ -445,7 +445,8 @@ fit_cdf = function(y) {
 }
 
 #plots cdfs
-plot(t_grid[seq(1,n,1)], w_matrix[, 1], ylim = c(0,1), type = "l")
+
+plot(t_grid[seq(1,n,1)], w_matrix[, 32], xlab = "t values", ylim = c(0,1), type = "l")
 
 for (t in 2:length(t_grid)) {
   lines(t_grid[seq(1,n,1)], w_matrix[, t], ylim = c(0,1), type = "l")
