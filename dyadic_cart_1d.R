@@ -352,13 +352,29 @@ make_new_data = function(y) { #makes new vector, 1 if y <= t, 0 if not
   }
   return(w)
 }
+
+#function for t not in t_grid
+new_data_given_t = function(y,t) {
+  
+  w2 = vector(mode = "numeric", length = length(y))
+  
+    for (i in 1:length(y)) {
+      if (y[i] <= t) {
+        w2[i] = 1
+      } else {
+        w2[i] = 0
+      }
+      
+    }
+    return(w2)
+}
   
 
 ##to run----
 l = 5
 n = 2^l
 sigma = 0.5
-theta = sapply(seq(1:n)/n,f4)
+theta = sapply(seq(1:n)/n,f3)
 y = theta + rnorm(2^l,0,sigma); plot(y)
 t = 2^4 #must be between 1 and n
 
@@ -380,15 +396,29 @@ mse = sum((w[[t]] - best_fit)^2); mse
 #return(best_fit)
 #}
 
+#this section is for generating stuff with a given t
+t = 0.5
+w3 = new_data_given_t(y,t)
+lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9)
 
+cv_w_odd = crossval_odd(w3); #cv_w_odd
+cv_w_even = crossval_even(w3); #cv_w_even
+theta_hat_even = create_theta_vector(l, cv_w_even); #theta_hat_even
+theta_hat_odd = create_theta_vector(l, cv_w_odd); #theta_hat_odd
+best_fit = minimize_pe(w3,l); #best_fit
+
+plot(w3, main = paste("t = ",t)) #original function is black
+lines(seq(1,n,1),best_fit, type = "p", col = "purple") #fit is red
+mse = sum((w3 - best_fit)^2); mse
+#####
 
 ###plotting cdfs and using matrix
-l = 4
+l = 3
 n = 2^l
 sigma = 0.3
 #x = runif(n, min = 0, max = 1) #generate uniform distribution for x
 #theta = sapply(x,f4) #f4 is applied to the uniform distribution x
-theta = sapply(seq(1:n)/n,f4)
+theta = sapply(seq(1:n)/n,f3)
 y = theta + rnorm(2^l,0,sigma); plot(y)
 #y = theta +rnorm(2^l, 0, 0.2)
 
