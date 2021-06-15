@@ -347,11 +347,11 @@ make_new_data = function(y, t_grid) { #makes new vector, 1 if y <= t, 0 if not
 
 #plots cdfs as continuous
 
-plot_cdf = function(xelem) {
+plot_cdf = function(xelem, firstfunction, secondfunction) {
   
   xval = x[xelem]
   
-  plot(t_grid, pnorm(t_grid, f(xval), f2(xval)), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
+  plot(t_grid, pnorm(t_grid, firstfunction(xval), secondfunction(xval)), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
   lines(t_grid, w_matrix[,xelem], xlab = "t values", ylim = c(0,1), type = "l", col = "red")
   
   legend("bottomright", legend=c("original", paste("x = ", round(xval, digits = 5))),
@@ -387,11 +387,11 @@ add3xplots = function(xelem1, xelem2, xelem3, col1, col2, col3) {
 }
 
 #for any given x
-random_x = function(anyx) {
+random_x = function(anyx, firstfunction, secondfunction) {
   
   cdf_index = which.min(abs(anyx - x)) #finds index in x vector that the given value is closest to
   averagecdf = (w_matrix[ ,cdf_index + 1] + w_matrix[ ,cdf_index - 1]) / 2
-  plot(t_grid, pnorm(t_grid, f(anyx), f2(anyx)), main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
+  plot(t_grid, pnorm(t_grid, firstfunction(anyx), secondfunction(anyx)), main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
   lines(t_grid, sort(averagecdf), main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "red")
   
   legend("bottomright", legend=c("original", paste("x = ", anyx)),
@@ -433,15 +433,17 @@ find_best_fit = function(vec, l) {
 l = 5
 n = 2^l
 sigma = 0.2
-theta = sapply(seq(1:n)/n,f)
+firstfunction = f
+secondfunction = f2
+theta = sapply(seq(1:n)/n,firstfunction)
 #y = theta + rnorm(2^l,0,sigma); plot(y)
 x = runif(n, min = 0, max = 1)
-mean_y = sapply(x, f)
-sigma_y = sapply(x, f2)
+mean_y = sapply(x, firstfunction)
+sigma_y = sapply(x, secondfunction)
 y = rnorm(2^l,mean_y,sigma_y); plot(y)
 y = y[order(x)]
 x = x[order(x)]
-w_matrix = get_w_matrix(y)
+#w_matrix = get_w_matrix(y)
 
 #get_w_matrix = function(y) { #doesnt work as function atm so it's commented out
 
