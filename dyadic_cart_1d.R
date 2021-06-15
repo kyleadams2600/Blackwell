@@ -105,7 +105,7 @@ f = function(x){
 
 
 f2 = function(x){
-  a1 = 2*ind(x,0.2,0.4)
+  a1 = 2*ind(x,0,0.4)
   a2 = 4*ind(x,0.4,0.6)
   a3 = ind(x,0.6,0.8)
   a4 = 4*ind(x,0.8,1)
@@ -353,21 +353,25 @@ make_new_data = function(y, t_grid) { #makes new vector, 1 if y <= t, 0 if not
 }
 
 ##to run----
-l = 5  
+l = 9
 n = 2^l
-sigma = 0.5
+sigma = 0.2
 theta = sapply(seq(1:n)/n,f)
-y = theta + rnorm(2^l,0,sigma); plot(y)
+#y = theta + rnorm(2^l,0,sigma); plot(y)
 x = runif(n, min = 0, max = 1)
 mean_y = sapply(x, f)
 sigma_y = sapply(x, f2)
 y = rnorm(2^l,mean_y,sigma_y); plot(y)
+y = y[order(x)]
+x = x[order(x)]
+
+
 
 
 #fit_cdf = function(y) { #doesnt work as function atm so it's commented out
 
 t_grid = make_t_grid(y) #choose between automated t_grid, or a specific t value or set of t's
-#t_grid = c()
+#t_grid = c(1.5)
 
 w_matrix = matrix(nrow = length(y), ncol = length(t_grid))
 w = make_new_data(y, t_grid)
@@ -390,7 +394,8 @@ for (t in 1:length(t_grid)) {
 
 #plots cdfs as continuous
 
-plot(t_grid[seq(1,n,1)], sort(w_matrix[, 1]), xlab = "t values", ylim = c(0,1), type = "l")
+plot(t_grid, pnorm(t_grid, 0, 4), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
+lines(t_grid, sort(w_matrix[,128]), xlab = "t values", ylim = c(0,1), type = "l", col = "red")
 
 #add new x's with labels
 lines(t_grid[seq(1,n,1)], sort(w_matrix[, as.integer(n/3)]), ylim = c(0,1), type = "l", col = "purple")
