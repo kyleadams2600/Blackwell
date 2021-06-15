@@ -332,11 +332,9 @@ make_t_grid = function(y) {
   
   return(t_grid)
 }
-
-make_new_data = function(y) { #makes new vector, 1 if y <= t, 0 if not
+make_new_data = function(y, t_grid) { #makes new vector, 1 if y <= t, 0 if not
   
   w = list()
-  t_grid = make_t_grid(y)
   temp_y = c(0)
   
   for (t in 1:length(t_grid)) {
@@ -347,123 +345,118 @@ make_new_data = function(y) { #makes new vector, 1 if y <= t, 0 if not
         temp_y[i] = 0
       }
       
+      
     }
     w[[t]] = (temp_y)
   }
   return(w)
 }
 
-#function for t not in t_grid
-new_data_given_t = function(y,t) {
-  
-  w2 = vector(mode = "numeric", length = length(y))
-  
-    for (i in 1:length(y)) {
-      if (y[i] <= t) {
-        w2[i] = 1
-      } else {
-        w2[i] = 0
-      }
-      
-    }
-    return(w2)
-}
-  
-
 ##to run----
-l = 5
+l = 5  
 n = 2^l
 sigma = 0.5
+theta = sapply(seq(1:n)/n,f)
+y = theta + rnorm(2^l,0,sigma); plot(y)
 x = runif(n, min = 0, max = 1)
-mean_y = sapply(x, f3)
-sigma_y = sapply(x, f4)
+mean_y = sapply(x, f)
+sigma_y = sapply(x, f2)
 y = rnorm(2^l,mean_y,sigma_y); plot(y)
-t = 2^4 #must be between 1 and n
 
-#get_f_estimate = function(y,t) {
 
-w = make_new_data(y)
-lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9)
-t_grid = make_t_grid(y)
+#fit_cdf = function(y) { #doesnt work as function atm so it's commented out
 
-cv_w_odd = crossval_odd(w[[t]]); #cv_w_odd
-cv_w_even = crossval_even(w[[t]]); #cv_w_even
-theta_hat_even = create_theta_vector(l, cv_w_even); #theta_hat_even
-theta_hat_odd = create_theta_vector(l, cv_w_odd); #theta_hat_odd
-best_fit = minimize_pe(w[[t]],l); #best_fit
+t_grid = make_t_grid(y) #choose between automated t_grid, or a specific t value or set of t's
+#t_grid = c()
 
-plot(w[[t]], main = paste("t = ",t_grid[t])) #original function is black
-lines(seq(1,n,1),best_fit, type = "p", col = "purple") #fit is red
-mse = sum((w[[t]] - best_fit)^2); mse
-#return(best_fit)
+w_matrix = matrix(nrow = length(y), ncol = length(t_grid))
+w = make_new_data(y, t_grid)
+
+lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9) #choose between automated lambdas, or a specific set of lambdas
+#lambdas = get_lambdas(y)
+
+for (t in 1:length(t_grid)) {
+  
+  cv_w_odd = crossval_odd(w[[t]]); #cv_w_odd
+  cv_w_even = crossval_even(w[[t]]); #cv_w_even
+  theta_hat_even = create_theta_vector(l, cv_w_even); #theta_hat_even
+  theta_hat_odd = create_theta_vector(l, cv_w_odd); #theta_hat_odd
+  best_fit = minimize_pe(w[[t]],l); #best_fit
+  
+  w_matrix[t, ] = best_fit #each row represents yhat based on t_grid[t], #matrix[t, ] = best fit for t'th entry in t_grid, matrix [ ,X] is the cdf of xX, # so matrix [ ,5] is the cdf of x5, based on each t in t_grid
+}
+#return(w_matrix)
 #}
 
-#this section is for generating stuff with a given t
-t = 0.5
-w3 = new_data_given_t(y,t)
-lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9)
+#plots cdfs as continuous
 
-cv_w_odd = crossval_odd(w3); #cv_w_odd
-cv_w_even = crossval_even(w3); #cv_w_even
-theta_hat_even = create_theta_vector(l, cv_w_even); #theta_hat_even
-theta_hat_odd = create_theta_vector(l, cv_w_odd); #theta_hat_odd
-best_fit = minimize_pe(w3,l); #best_fit
+plot(t_grid[seq(1,n,1)], sort(w_matrix[, 1]), xlab = "t values", ylim = c(0,1), type = "l")
 
-plot(w3, main = paste("t = ",t)) #original function is black
-lines(seq(1,n,1),best_fit, type = "p", col = "purple") #fit is red
-mse = sum((w3 - best_fit)^2); mse
-#####
+#add new x's with labels
+lines(t_grid[seq(1,n,1)], sort(w_matrix[, as.integer(n/3)]), ylim = c(0,1), type = "l", col = "purple")
+lines(t_grid[seq(1,n,1)], sort(w_matrix[, as.integer(2*n/3)]), ylim = c(0,1), type = "l", col = "blue")
+lines(t_grid[seq(1,n,1)], sort(w_matrix[, t]), ylim = c(0,1), type = "l", col = "red")
+x1 = as.integer(n/3)
+x2 = as.integer(2*n/3)
+x3 = n
+
+legend("bottomright", legend=c("1", x1, x2, x3),
+       col=c("black", "purple", "blue", "red"), lty=1, cex=0.65)
+
+#one way to plot piecewise cdf
+#lines(stepfun(t_grid[seq(1,n-1,1)], sort(w_matrix[, t])), ylim = c(0,1), col = "green")
+
+#generate_y = function(l,sigma,f,f2) {
+
+#  l = 5  
+#n = 2^l
+#  sigma = 0.5
+#theta = sapply(seq(1:n)/n,f)
+#y = theta + rnorm(2^l,0,sigma); plot(y)
+#x = runif(n, min = 0, max = 1)
+#mean_y = sapply(x, f)
+#sigma_y = sapply(x, f2)
+#y = rnorm(2^l,mean_y,sigma_y); plot(y)
+
+#return(y)
+#}
+
+
+
+##TESTING COMBINING CODE INTO FUNCTIONS
+#ytest = generate_y(6, 0.3, f3, f4)
+#wtestmatrix = fit_cdf(ytest)
+
+#takes average fhat and plots against empirical cdf of y
+#averagefhat = c(0)
+
+#for (j in 1:length(y)) {
+#  averagefhat[j] = sum(w_matrix[j,])/n
+#}
+#plot(ecdf(y))
+#lines(t_grid[seq(1,n,1)], averagefhat, ylim = c(0,1), type = "p", col = "blue", pch = 7)
+
+
 
 ###plotting cdfs and using matrix
-<<<<<<< HEAD
-l = 5
-n = 2^l
-sigma = 0.3
+#l = 4
+#n = 2^l
+#sigma = 0.3
 #x = runif(n, min = 0, max = 1) #generate uniform distribution for x
 #theta = sapply(x,f4) #f4 is applied to the uniform distribution x
-theta = sapply(seq(1:n)/n,f2)
-y = theta + rnorm(2^l,0,sigma); plot(y)
-#y = theta +rnorm(2^l, 0, 0.2)
-=======
-l = 4
-n = 2^l
-#sigma = 0.3
-x = runif(n, min = 0, max = 1) #generate uniform distribution for x
-mean_y = sapply(x,f3) #f3 is applied to the uniform distribution x
-sigma_y = sapply(x,f4)
 #theta = sapply(seq(1:n)/n,f3)
-y = rnorm(2^l,mean_y,sigma_y); plot(y)
->>>>>>> 9f2243a9869369f69e52a931875e7ca77ea8236c
+#y = theta + rnorm(2^l,0,sigma); plot(y)
+#y = theta +rnorm(2^l, 0, 0.2)
+#sigma = 0.3
+#x = runif(n, min = 0, max = 1) #generate uniform distribution for x
+#mean_y = sapply(x,f3) #f3 is applied to the uniform distribution x
+#sigma_y = sapply(x,f4)
+#theta = sapply(seq(1:n)/n,f3)
+#y = rnorm(2^l,mean_y,sigma_y); plot(y)
 
-fit_cdf = function(y) {
-  
-  w_matrix = matrix(nrow = length(y), ncol = length(y))
-  w = make_new_data(y)
-  lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9)
-  t_grid = make_t_grid(y)
-  
-  for (t in 1:length(t_grid)) {
-    
-    cv_w_odd = crossval_odd(w[[t]]); #cv_w_odd
-    cv_w_even = crossval_even(w[[t]]); #cv_w_even
-    theta_hat_even = create_theta_vector(l, cv_w_even); #theta_hat_even
-    theta_hat_odd = create_theta_vector(l, cv_w_odd); #theta_hat_odd
-    best_fit = minimize_pe(w[[t]],l); #best_fit
-    
-    w_matrix[t, ] = best_fit #each row represents yhat based on t_grid[t]
-    #matrix[t, ] = best fit for t'th entry in t_grid, matrix [ ,X] is the cdf of xX
-    # so matrix [ ,5] is the cdf of x5, based on each t in t_grid
-  }
-  return(w_matrix) #this doesnt work but the function works line by line
-}
-
-#plots cdfs
-
-plot(t_grid[seq(1,n,1)], w_matrix[, 32], xlab = "t values", ylim = c(0,1), type = "l")
-
-for (t in 2:length(t_grid)) {
-  lines(t_grid[seq(1,n,1)], w_matrix[, t], ylim = c(0,1), type = "l")
-}
-
-w_matrix
-
+#currently you have to go back to minimize_pe and run line by line for first 4 vals
+#best_lambda_even #best lambda for even observations
+#best_lambda_odd #best lambda for odd observations
+#pe_even[min_index] #prediction error for even obsv
+#pe_odd[min_index_even] #prediction error for odd obsv
+#mean((y - best_fit)^2) #MSE
