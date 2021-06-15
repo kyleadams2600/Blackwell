@@ -294,31 +294,24 @@ minimize_pe = function(y, l) {
 }
 
 ##Run the Algorithm----
-l = 10
-n = 2^l
-sigma = 0.4
-theta = sapply(seq(1:n)/n,f4)
-y = theta + rnorm(2^l,0,sigma); plot(y)
+#l = 10
+#n = 2^l
+#sigma = 0.4
+#theta = sapply(seq(1:n)/n,f4)
+#y = theta + rnorm(2^l,0,sigma); plot(y)
 
-lambdas = get_lambdas(y); #lambdas
+#lambdas = get_lambdas(y); #lambdas
 #lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9)
-cv_y_odd = crossval_odd(y);# cv_y_odd
-cv_y_even = crossval_even(y);# cv_y_even
-theta_hat_even = create_theta_vector(l, cv_y_even);# theta_hat_even
-theta_hat_odd = create_theta_vector(l, cv_y_odd);# theta_hat_odd
-best_fit = minimize_pe(y,l);# best_fit
+#cv_y_odd = crossval_odd(y);# cv_y_odd
+#cv_y_even = crossval_even(y);# cv_y_even
+#theta_hat_even = create_theta_vector(l, cv_y_even);# theta_hat_even
+#theta_hat_odd = create_theta_vector(l, cv_y_odd);# theta_hat_odd
+#best_fit = minimize_pe(y,l);# best_fit
 
 ###plotting----
-plot(y, main = "Best Fit mapped onto Y") #original function is black
-lines(seq(1,n,1),best_fit, type = "p", col = "red") #fit is red
+#plot(y, main = "Best Fit mapped onto Y") #original function is black
+#lines(seq(1,n,1),best_fit, type = "p", col = "red") #fit is red
 
-###get info about best fit----
-#currently you have to go back to minimize_pe and run line by line for first 4 vals
-best_lambda_even #best lambda for even observations
-best_lambda_odd #best lambda for odd observations
-pe_even[min_index] #prediction error for even obsv
-pe_odd[min_index_even] #prediction error for odd obsv
-mean((y - best_fit)^2) #MSE
 
 ####Estimating CDFs----
 
@@ -366,8 +359,6 @@ y = y[order(x)]
 x = x[order(x)]
 
 
-
-
 #fit_cdf = function(y) { #doesnt work as function atm so it's commented out
 
 t_grid = make_t_grid(y) #choose between automated t_grid, or a specific t value or set of t's
@@ -407,6 +398,17 @@ x3 = n
 
 legend("bottomright", legend=c("1", x1, x2, x3),
        col=c("black", "purple", "blue", "red"), lty=1, cex=0.65)
+
+#for any given x
+random_x = function(anyx) {
+  
+  cdf_index = which.min(abs(anyx - x)) #finds index in x vector that the given value is closest to
+  averagecdf = (w_matrix[ ,cdf_index + 1] + w_matrix[ ,cdf_index - 1]) / 2
+  plot(t_grid, sort(averagecdf), main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "red")
+
+}
+
+
 
 #one way to plot piecewise cdf
 #lines(stepfun(t_grid[seq(1,n-1,1)], sort(w_matrix[, t])), ylim = c(0,1), col = "green")
