@@ -345,8 +345,92 @@ make_new_data = function(y, t_grid) { #makes new vector, 1 if y <= t, 0 if not
   return(w)
 }
 
+#plots cdfs as continuous
+
+plot_cdf = function(xelem) {
+  
+  xval = x[xelem]
+  
+  plot(t_grid, pnorm(t_grid, f(xval), f2(xval)), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
+  lines(t_grid, w_matrix[,xelem], xlab = "t values", ylim = c(0,1), type = "l", col = "red")
+  
+  legend("bottomright", legend=c("original", paste("x = ", round(xval, digits = 5))),
+         col=c("blue", "red"), lty=1, cex=0.65)
+}
+
+addxplot = function(xelem, colorpick) {
+  
+  xval = x[xelem]
+  
+  lines(t_grid, w_matrix[,xelem], xlab = "t values", ylim = c(0,1), type = "l", col = colorpick)
+  
+}
+
+
+
+#add new x's with labels
+
+add3xplots = function(xelem1, xelem2, xelem3, col1, col2, col3) {
+  
+  x1 = round(x[xelem1], digits = 4)
+  x2 = round(x[xelem2], digits = 4)
+  x3 = round(x[xelem3], digit = 4)
+  
+  lines(t_grid, w_matrix[, xelem1], ylim = c(0,1), type = "l", col = col1)
+  lines(t_grid, w_matrix[, xelem2], ylim = c(0,1), type = "l", col = col2)
+  lines(t_grid, w_matrix[, xelem3], ylim = c(0,1), type = "l", col = col3)
+  
+  
+  legend("bottomright", legend=c(x1, x2, x3),
+         col=c(col1, col2, col3), lty=1, cex=0.65)
+  
+}
+
+#for any given x
+random_x = function(anyx) {
+  
+  cdf_index = which.min(abs(anyx - x)) #finds index in x vector that the given value is closest to
+  averagecdf = (w_matrix[ ,cdf_index + 1] + w_matrix[ ,cdf_index - 1]) / 2
+  plot(t_grid, pnorm(t_grid, f(anyx), f2(anyx)), main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
+  lines(t_grid, sort(averagecdf), main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "red")
+  
+  legend("bottomright", legend=c("original", paste("x = ", anyx)),
+         col=c("blue", "red"), lty=1, cex=0.65)
+}
+
+random_t = function(anyt) {
+  
+  wvec = c(0)
+  
+  for (i in 1:length(y)) {
+    if (y[i] <= anyt) {
+      wvec[i] = 1
+    } else {
+      wvec[i] = 0
+    }
+  }
+  
+  cv_w_odd = crossval_odd(wvec); #cv_w_odd
+  cv_w_even = crossval_even(wvec); #cv_w_even
+  theta_hat_even = create_theta_vector(l, cv_w_even); #theta_hat_even
+  theta_hat_odd = create_theta_vector(l, cv_w_odd); #theta_hat_odd
+  best_fit = minimize_pe(wvec,l);
+  plot(best_fit, main = paste("t = ", anyt), xlab = "x values", ylim = c(0,1),col = "blue")
+  
+}
+
+find_best_fit = function(vec, l) {
+  
+  cv_odd = crossval_odd(vec); #cv_w_odd
+  cv_even = crossval_even(vec); #cv_w_even
+  theta_hat_even = create_theta_vector(l, cv_even); #theta_hat_even
+  theta_hat_odd = create_theta_vector(l, cv_odd); #theta_hat_odd
+  best_fit = minimize_pe(vec,l)
+  return(best_fit)
+}
+
 ##to run----
-l = 9
+l = 5
 n = 2^l
 sigma = 0.2
 theta = sapply(seq(1:n)/n,f)
@@ -357,57 +441,38 @@ sigma_y = sapply(x, f2)
 y = rnorm(2^l,mean_y,sigma_y); plot(y)
 y = y[order(x)]
 x = x[order(x)]
+w_matrix = get_w_matrix(y)
 
+#get_w_matrix = function(y) { #doesnt work as function atm so it's commented out
 
-#fit_cdf = function(y) { #doesnt work as function atm so it's commented out
-
-t_grid = make_t_grid(y) #choose between automated t_grid, or a specific t value or set of t's
-#t_grid = c(1.5)
-
-w_matrix = matrix(nrow = length(y), ncol = length(t_grid))
+t_grid = make_t_grid(y)
+w_matrix = matrix(nrow = length(t_grid), ncol = length(y))
 w = make_new_data(y, t_grid)
-
 lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9) #choose between automated lambdas, or a specific set of lambdas
 #lambdas = get_lambdas(y)
 
 for (t in 1:length(t_grid)) {
+  
   
   cv_w_odd = crossval_odd(w[[t]]); #cv_w_odd
   cv_w_even = crossval_even(w[[t]]); #cv_w_even
   theta_hat_even = create_theta_vector(l, cv_w_even); #theta_hat_even
   theta_hat_odd = create_theta_vector(l, cv_w_odd); #theta_hat_odd
   best_fit = minimize_pe(w[[t]],l); #best_fit
-  
   w_matrix[t, ] = best_fit #each row represents yhat based on t_grid[t], #matrix[t, ] = best fit for t'th entry in t_grid, matrix [ ,X] is the cdf of xX, # so matrix [ ,5] is the cdf of x5, based on each t in t_grid
+
+  }
+
+for (k in 1:length(w_matrix[1,])) {
+  w_matrix[,k] = sort(w_matrix[,k])
 }
+
 #return(w_matrix)
 #}
 
-#plots cdfs as continuous
-
-plot(t_grid, pnorm(t_grid, 0, 4), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
-lines(t_grid, sort(w_matrix[,128]), xlab = "t values", ylim = c(0,1), type = "l", col = "red")
-
-#add new x's with labels
-lines(t_grid[seq(1,n,1)], sort(w_matrix[, as.integer(n/3)]), ylim = c(0,1), type = "l", col = "purple")
-lines(t_grid[seq(1,n,1)], sort(w_matrix[, as.integer(2*n/3)]), ylim = c(0,1), type = "l", col = "blue")
-lines(t_grid[seq(1,n,1)], sort(w_matrix[, t]), ylim = c(0,1), type = "l", col = "red")
-x1 = as.integer(n/3)
-x2 = as.integer(2*n/3)
-x3 = n
-
-legend("bottomright", legend=c("1", x1, x2, x3),
-       col=c("black", "purple", "blue", "red"), lty=1, cex=0.65)
-
-#for any given x
-random_x = function(anyx) {
-  
-  cdf_index = which.min(abs(anyx - x)) #finds index in x vector that the given value is closest to
-  averagecdf = (w_matrix[ ,cdf_index + 1] + w_matrix[ ,cdf_index - 1]) / 2
-  plot(t_grid, sort(averagecdf), main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "red")
-
-}
-
+plot_cdf(31)
+random_x(0.32)
+random_t(3)
 
 
 #one way to plot piecewise cdf
