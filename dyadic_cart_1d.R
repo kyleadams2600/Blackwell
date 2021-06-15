@@ -459,4 +459,4 @@ legend("bottomright", legend=c("1", x1, x2, x3),
 #best_lambda_odd #best lambda for odd observations
 #pe_even[min_index] #prediction error for even obsv
 #pe_odd[min_index_even] #prediction error for odd obsv
-#mean((y - best_fit)^2) #MSE
+#mean((y - best_fit)^2) #MSE 
