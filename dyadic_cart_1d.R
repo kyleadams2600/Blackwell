@@ -256,6 +256,10 @@ minimize_pe = function(y, l) {
   final_fit_odd = c(0)
   final_fit_even = c(0)
   final_fit = c(0)
+  cv_y_odd = crossval_odd(y);# cv_y_odd
+  cv_y_even = crossval_even(y);# cv_y_even
+  theta_hat_even = create_theta_vector(l, cv_y_even);# theta_hat_even
+  theta_hat_odd = create_theta_vector(l, cv_y_odd);# theta_hat_odd
   
   
   #pe_odd uses even observations and vice versa
@@ -302,11 +306,8 @@ minimize_pe = function(y, l) {
 
 #lambdas = get_lambdas(y); #lambdas
 #lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9)
-#cv_y_odd = crossval_odd(y);# cv_y_odd
-#cv_y_even = crossval_even(y);# cv_y_even
-#theta_hat_even = create_theta_vector(l, cv_y_even);# theta_hat_even
-#theta_hat_odd = create_theta_vector(l, cv_y_odd);# theta_hat_odd
-#best_fit = minimize_pe(y,l);# best_fit
+
+#best_fit = find_best_fit(y,l);# best_fit
 
 ###plotting----
 #plot(y, main = "Best Fit mapped onto Y") #original function is black
@@ -413,31 +414,44 @@ random_t = function(anyt) {
     }
   }
   
-  cv_w_odd = crossval_odd(wvec); #cv_w_odd
-  cv_w_even = crossval_even(wvec); #cv_w_even
-  theta_hat_even = create_theta_vector(l, cv_w_even); #theta_hat_even
-  theta_hat_odd = create_theta_vector(l, cv_w_odd); #theta_hat_odd
-  best_fit = minimize_pe(wvec,l);
+  best_fit = find_best_fit(wvec,l);
   plot(best_fit, main = paste("t = ", anyt), xlab = "x values", ylim = c(0,1),col = "blue")
   
 }
 
 find_best_fit = function(vec, l) {
-  
-  cv_odd = crossval_odd(vec); #cv_w_odd
-  cv_even = crossval_even(vec); #cv_w_even
-  theta_hat_even = create_theta_vector(l, cv_even); #theta_hat_even
-  theta_hat_odd = create_theta_vector(l, cv_odd); #theta_hat_odd
   best_fit = minimize_pe(vec,l)
   return(best_fit)
 }
 
-##to run----
-l = 5
+get_w_matrix = function(y) { 
+  
+  t_grid = make_t_grid(y)
+  w_matrix = matrix(nrow = length(t_grid), ncol = length(y))
+  w = make_new_data(y, t_grid)
+  lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9) #choose between automated lambdas, or a specific set of lambdas
+  #lambdas = get_lambdas(y)
+  
+  for (t in 1:length(t_grid)) {
+    
+    w_matrix[t, ] = find_best_fit(w[[t]],l) #each row represents yhat based on t_grid[t], #matrix[t, ] = best fit for t'th entry in t_grid, matrix [ ,X] is the cdf of xX, # so matrix [ ,5] is the cdf of x5, based on each t in t_grid
+    
+  }
+  
+  for (k in 1:length(w_matrix[1,])) {
+    w_matrix[,k] = sort(w_matrix[,k])
+  }
+  
+  return(w_matrix)
+}
+
+fit_cdf = function(l, sigma, firstfunction, secondfunction) {
+
+#l = 6
 n = 2^l
-sigma = 0.2
-firstfunction = f
-secondfunction = f2
+#sigma = 0.2
+#firstfunction = f
+#secondfunction = f2
 theta = sapply(seq(1:n)/n,firstfunction)
 #y = theta + rnorm(2^l,0,sigma); plot(y)
 x = runif(n, min = 0, max = 1)
@@ -446,38 +460,22 @@ sigma_y = sapply(x, secondfunction)
 y = rnorm(2^l,mean_y,sigma_y); plot(y)
 y = y[order(x)]
 x = x[order(x)]
-#w_matrix = get_w_matrix(y)
+t_grid <<- make_t_grid(y)
+w_matrix = get_w_matrix(y)
+#plot_cdf(15, firstfunction, secondfunction)
 
-#get_w_matrix = function(y) { #doesnt work as function atm so it's commented out
-
-t_grid = make_t_grid(y)
-w_matrix = matrix(nrow = length(t_grid), ncol = length(y))
-w = make_new_data(y, t_grid)
-lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9) #choose between automated lambdas, or a specific set of lambdas
-#lambdas = get_lambdas(y)
-
-for (t in 1:length(t_grid)) {
-  
-  
-  cv_w_odd = crossval_odd(w[[t]]); #cv_w_odd
-  cv_w_even = crossval_even(w[[t]]); #cv_w_even
-  theta_hat_even = create_theta_vector(l, cv_w_even); #theta_hat_even
-  theta_hat_odd = create_theta_vector(l, cv_w_odd); #theta_hat_odd
-  best_fit = minimize_pe(w[[t]],l); #best_fit
-  w_matrix[t, ] = best_fit #each row represents yhat based on t_grid[t], #matrix[t, ] = best fit for t'th entry in t_grid, matrix [ ,X] is the cdf of xX, # so matrix [ ,5] is the cdf of x5, based on each t in t_grid
-
-  }
-
-for (k in 1:length(w_matrix[1,])) {
-  w_matrix[,k] = sort(w_matrix[,k])
+return(w_matrix)
 }
 
-#return(w_matrix)
-#}
+l = 6
+sigma = 0.3
+firstfunction = f4 #check fit_cdf function for usage of firstfunction
+secondfunction = f5 #^^ " " secondfunction
 
-plot_cdf(31)
-random_x(0.32)
-random_t(3)
+w_matrix = fit_cdf(l, sigma, firstfunction, secondfunction) #returns w matrix
+plot_cdf(31, firstfunction, secondfunction)
+random_x(0.32, firstfunction, secondfunction)
+random_t(0)
 
 
 #one way to plot piecewise cdf
