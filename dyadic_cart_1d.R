@@ -351,6 +351,9 @@ plot_cdf = function(xelem, firstfunction, secondfunction) {
   
   xval = x[xelem]
   
+  mse = mean((pnorm(t_grid, firstfunction(xval), secondfunction(xval)) - w_matrix[,xelem])^2)
+  message("mse = ", mse)
+  
   plot(t_grid, pnorm(t_grid, firstfunction(xval), secondfunction(xval)), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
   lines(t_grid, w_matrix[,xelem], xlab = "t values", ylim = c(0,1), type = "l", col = "red")
   
