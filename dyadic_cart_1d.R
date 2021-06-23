@@ -352,12 +352,10 @@ plot_cdf = function(xelem, firstfunction, secondfunction) {
   
   xval = x[xelem]
   
-  #mse = mean((pnorm(t_grid, firstfunction(xval), secondfunction(xval)) - w_matrix[,xelem])^2)
-  mse = mean((ppois(t_grid, firstfunction(xval)) - w_matrix[,xelem])^2)
+  mse = mean((pnorm(t_grid, firstfunction(xval), secondfunction(xval)) - w_matrix[,xelem])^2)
   message("mse = ", mse)
   
-  #plot(t_grid, pnorm(t_grid, firstfunction(xval), secondfunction(xval)), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
-  plot(t_grid, ppois(t_grid, firstfunction(xval)), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
+  plot(t_grid, pnorm(t_grid, firstfunction(xval), secondfunction(xval)), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
   lines(t_grid, w_matrix[,xelem], xlab = "t values", ylim = c(0,1), type = "l", col = "red")
   
   legend("bottomright", legend=c("original", paste("x = ", round(xval, digits = 5))),
@@ -372,21 +370,31 @@ addxplot = function(xelem, colorpick) {
   
 }
 
+
+
 #add new x's with labels
 
-add3xplots = function(xelem1, xelem2, xelem3, col1, col2, col3) {
+add3xplots = function(x1, x2, x3) {
   
-  x1 = round(x[xelem1], digits = 4)
-  x2 = round(x[xelem2], digits = 4)
-  x3 = round(x[xelem3], digit = 4)
+  cdf_index_x1 = which.min(abs(x1 - x)) #finds index in x vector that the given value is closest to
+  averagecdf_x1 = (w_matrix[ ,cdf_index_x1 + 1] + w_matrix[ ,cdf_index_x1 - 1]) / 2
+  plot(t_grid, pnorm(t_grid, firstfunction(x1), secondfunction(x1)), main = paste("cdfs at x = ", x1, ",", x2, ",", x3), xlab = "t values", ylim = c(0,1), type = "l", col = "royalblue4")
+  lines(t_grid, sort(averagecdf_x1), xlab = "t values", ylim = c(0,1), type = "l", lty = 3, col = "royalblue1")
   
-  lines(t_grid, w_matrix[, xelem1], ylim = c(0,1), type = "l", col = col1)
-  lines(t_grid, w_matrix[, xelem2], ylim = c(0,1), type = "l", col = col2)
-  lines(t_grid, w_matrix[, xelem3], ylim = c(0,1), type = "l", col = col3)
+  cdf_index_x2 = which.min(abs(x2 - x)) #finds index in x vector that the given value is closest to
+  averagecdf_x2 = (w_matrix[ ,cdf_index_x2 + 1] + w_matrix[ ,cdf_index_x2 - 1]) / 2
+  lines(t_grid, pnorm(t_grid, firstfunction(x2), secondfunction(x2)), xlab = "t values", ylim = c(0,1), type = "l", col = "purple4")
+  lines(t_grid, sort(averagecdf_x2), xlab = "t values", ylim = c(0,1), type = "l", lty = 3, col = "purple1")
+  
+  
+  cdf_index_x3 = which.min(abs(x3 - x)) #finds index in x vector that the given value is closest to
+  averagecdf_x3 = (w_matrix[ ,cdf_index_x3 + 1] + w_matrix[ ,cdf_index_x3 - 1]) / 2
+  lines(t_grid, pnorm(t_grid, firstfunction(x3), secondfunction(x3)), xlab = "t values", ylim = c(0,1), type = "l", col = "red4")
+  lines(t_grid, sort(averagecdf_x3), xlab = "t values", ylim = c(0,1), type = "l", lty = 3, col = "red1")
   
   
   legend("bottomright", legend=c(x1, x2, x3),
-         col=c(col1, col2, col3), lty=1, cex=0.65)
+         col=c("red", "cyan", "green"), lty=1, cex=0.65)
   
 }
 
@@ -395,7 +403,7 @@ random_x = function(anyx, firstfunction, secondfunction) {
   
   cdf_index = which.min(abs(anyx - x)) #finds index in x vector that the given value is closest to
   averagecdf = (w_matrix[ ,cdf_index + 1] + w_matrix[ ,cdf_index - 1]) / 2
-  plot(t_grid, ppois(t_grid, firstfunction(anyx)), main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
+  plot(t_grid, pnorm(t_grid, firstfunction(anyx), secondfunction(anyx)), main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
   lines(t_grid, sort(averagecdf), main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "red")
   
   legend("bottomright", legend=c("original", paste("x = ", anyx)),
@@ -445,42 +453,21 @@ get_w_matrix = function(y) {
   return(w_matrix)
 }
 
-two_normals = function(f1, f2, f3, f4) { # returns y generated from 2 normal dists
-  
-  coin = c(TRUE, FALSE)
-  y = c(0)
-  x = runif(n, 0 ,1)
-  
-  mean1 = sapply(x, f1)
-  sigma1 = sapply(x, f2)
-  norm1 = rnorm(n, mean1, sigma1)
-  
-  mean2 = sapply(x, f3)
-  sigma2 = sapply(x, f4)
-  norm2 = rnorm(n, mean2, sigma2)
-  
-  for(i in 1:length(x)) {
-    result = sample(coin, size = 1, prob = c(0.5, 0.5))
-    if (result == TRUE) {
-      y[i] = norm1[i]
-    } else {
-      y[i] = norm2[i]
-    }
-  }
-  return(y)
-}
-
 fit_cdf = function(l, sigma, firstfunction, secondfunction) {
 
+#l = 6
 n = 2^l
+#sigma = 0.2
+#firstfunction = f
+#secondfunction = f2
+theta = sapply(seq(1:n)/n,firstfunction)
+#y = theta + rnorm(2^l,0,sigma); plot(y)
 x = runif(n, min = 0, max = 1)
 mean_y = sapply(x, firstfunction)
 sigma_y = sapply(x, secondfunction)
-lambda_y = sapply(x, firstfunction)
-#y = rpois(2^l, lambda_y); plot(y)
-y = two_normals(f1,f2,f3,f4); plot(y)
+y = rnorm(2^l,mean_y,sigma_y); plot(y)
 y = y[order(x)]
-x = x[order(x)]
+x <<- x[order(x)]
 t_grid <<- make_t_grid(y)
 w_matrix = get_w_matrix(y)
 #plot_cdf(15, firstfunction, secondfunction)
@@ -488,17 +475,13 @@ w_matrix = get_w_matrix(y)
 return(w_matrix)
 }
 
-l = 11
+l = 6
 sigma = 0.3
-firstfunction = f3 #check fit_cdf function for usage of firstfunction
+firstfunction = f4 #check fit_cdf function for usage of firstfunction
 secondfunction = f5 #^^ " " secondfunction
-f1 = f # parameters for two_normals function
-f2 = f2
-f3 = f3
-f4 = f4
 
 w_matrix = fit_cdf(l, sigma, firstfunction, secondfunction) #returns w matrix
-plot_cdf(2^10, firstfunction, secondfunction)
+plot_cdf(31, firstfunction, secondfunction)
 random_x(0.32, firstfunction, secondfunction)
 random_t(0)
 
