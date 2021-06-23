@@ -352,10 +352,12 @@ plot_cdf = function(xelem, firstfunction, secondfunction) {
   
   xval = x[xelem]
   
-  mse = mean((pnorm(t_grid, firstfunction(xval), secondfunction(xval)) - w_matrix[,xelem])^2)
+  #mse = mean((pnorm(t_grid, firstfunction(xval), secondfunction(xval)) - w_matrix[,xelem])^2)
+  mse = mean((ppois(t_grid, firstfunction(xval)) - w_matrix[,xelem])^2)
   message("mse = ", mse)
   
-  plot(t_grid, pnorm(t_grid, firstfunction(xval), secondfunction(xval)), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
+  #plot(t_grid, pnorm(t_grid, firstfunction(xval), secondfunction(xval)), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
+  plot(t_grid, ppois(t_grid, firstfunction(xval)), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
   lines(t_grid, w_matrix[,xelem], xlab = "t values", ylim = c(0,1), type = "l", col = "red")
   
   legend("bottomright", legend=c("original", paste("x = ", round(xval, digits = 5))),
@@ -369,8 +371,6 @@ addxplot = function(xelem, colorpick) {
   lines(t_grid, w_matrix[,xelem], xlab = "t values", ylim = c(0,1), type = "l", col = colorpick)
   
 }
-
-
 
 #add new x's with labels
 
@@ -398,12 +398,14 @@ add3xplots = function(x1, x2, x3) {
   
 }
 
+
+
 #for any given x
 random_x = function(anyx, firstfunction, secondfunction) {
   
   cdf_index = which.min(abs(anyx - x)) #finds index in x vector that the given value is closest to
   averagecdf = (w_matrix[ ,cdf_index + 1] + w_matrix[ ,cdf_index - 1]) / 2
-  plot(t_grid, pnorm(t_grid, firstfunction(anyx), secondfunction(anyx)), main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
+  plot(t_grid, ppois(t_grid, firstfunction(anyx)), main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
   lines(t_grid, sort(averagecdf), main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "red")
   
   legend("bottomright", legend=c("original", paste("x = ", anyx)),
@@ -453,35 +455,60 @@ get_w_matrix = function(y) {
   return(w_matrix)
 }
 
-fit_cdf = function(l, sigma, firstfunction, secondfunction) {
-
-#l = 6
-n = 2^l
-#sigma = 0.2
-#firstfunction = f
-#secondfunction = f2
-theta = sapply(seq(1:n)/n,firstfunction)
-#y = theta + rnorm(2^l,0,sigma); plot(y)
-x = runif(n, min = 0, max = 1)
-mean_y = sapply(x, firstfunction)
-sigma_y = sapply(x, secondfunction)
-y = rnorm(2^l,mean_y,sigma_y); plot(y)
-y = y[order(x)]
-x <<- x[order(x)]
-t_grid <<- make_t_grid(y)
-w_matrix = get_w_matrix(y)
-#plot_cdf(15, firstfunction, secondfunction)
-
-return(w_matrix)
+two_normals = function(f1, f2, f3, f4) { # returns y generated from 2 normal dists
+  
+  coin = c(TRUE, FALSE)
+  y = c(0)
+  x = runif(n, 0 ,1)
+  
+  mean1 = sapply(x, f1)
+  sigma1 = sapply(x, f2)
+  norm1 = rnorm(n, mean1, sigma1)
+  
+  mean2 = sapply(x, f3)
+  sigma2 = sapply(x, f4)
+  norm2 = rnorm(n, mean2, sigma2)
+  
+  for(i in 1:length(x)) {
+    result = sample(coin, size = 1, prob = c(0.5, 0.5))
+    if (result == TRUE) {
+      y[i] = norm1[i]
+    } else {
+      y[i] = norm2[i]
+    }
+  }
+  return(y)
 }
 
-l = 6
+fit_cdf = function(l, sigma, firstfunction, secondfunction) {
+  
+  n = 2^l
+  x = runif(n, min = 0, max = 1)
+  mean_y = sapply(x, firstfunction)
+  sigma_y = sapply(x, secondfunction)
+  lambda_y = sapply(x, firstfunction)
+  #y = rpois(2^l, lambda_y); plot(y)
+  y = two_normals(f1,f2,f3,f4); plot(y)
+  y = y[order(x)]
+  x = x[order(x)]
+  t_grid <<- make_t_grid(y)
+  w_matrix = get_w_matrix(y)
+  #plot_cdf(15, firstfunction, secondfunction)
+  
+  return(w_matrix)
+}
+
+l = 11
 sigma = 0.3
-firstfunction = f4 #check fit_cdf function for usage of firstfunction
+firstfunction = f3 #check fit_cdf function for usage of firstfunction
 secondfunction = f5 #^^ " " secondfunction
+f1 = f # parameters for two_normals function
+f2 = f2
+f3 = f3
+f4 = f4
 
 w_matrix = fit_cdf(l, sigma, firstfunction, secondfunction) #returns w matrix
-plot_cdf(31, firstfunction, secondfunction)
+plot_cdf(2^10, firstfunction, secondfunction)
 random_x(0.32, firstfunction, secondfunction)
 random_t(0)
 
