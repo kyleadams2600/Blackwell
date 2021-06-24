@@ -469,20 +469,74 @@ two_normals = function(f1, f2, f3, f4) { # returns y generated from 2 normal dis
   sigma2 = sapply(x, f4)
   norm2 = rnorm(n, mean2, sigma2)
   
+  mse_norm1 = c(0)
+  mse_norm2 = c(0)
+  
   for(i in 1:length(x)) {
     result = sample(coin, size = 1, prob = c(0.5, 0.5))
     if (result == TRUE) {
       y[i] = norm1[i]
+      mse_norm1[i] <<- i
     } else {
       y[i] = norm2[i]
+      mse_norm2[i] <<- i
     }
   }
   return(y)
 }
 
+random_x_two_normals = function(anyx, firstfunction, secondfunction, thirdfunction, fourthfunction) {
+  
+  cdf_index = which.min(abs(anyx - x))#finds index in x vector that the given value is closest to
+  
+  if (cdf_index %in% mse_norm1) { #finds estimate and mse based on first normal
+    
+    if (cdf_index == 1) {
+      averagecdf = (w_matrix[ ,1] + w_matrix[ , mse_norm1[2]]) / 2
+    }
+    
+    else if (cdf_index == n) {
+      averagecdf = (w_matrix[ ,n] + w_matrix[ , mse_norm1[length(mse_norm1) - 1]]) / 2
+    }
+    
+    else {
+      averagecdf = (w_matrix[ ,cdf_index] + w_matrix[ , match(cdf_index, mse_norm1) + 1]) / 2
+    }
+    
+    plot(t_grid, pnorm(t_grid, firstfunction(anyx), secondfunction(anyx)), main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
+    lines(t_grid, sort(averagecdf), main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "red")
+    mse = mean((pnorm(t_grid, firstfunction(anyx), secondfunction(anyx)) - averagecdf)^2)
+  }
+  
+  else { #finds estimate and mse based on second normal
+    
+    if (cdf_index == 1) {
+      averagecdf = (w_matrix[ ,1] + w_matrix[ , mse_norm2[2]]) / 2
+    }
+    
+    else if (cdf_index == n) {
+      averagecdf = (w_matrix[ ,n] + w_matrix[ , mse_norm2[length(mse_norm2) - 1]]) / 2
+    }
+    
+    else {
+      averagecdf = (w_matrix[ ,cdf_index] + w_matrix[ , match(cdf_index, mse_norm2) + 1]) / 2
+    }
+    
+    plot(t_grid, pnorm(t_grid, thirdfunction(anyx), fourthfunction(anyx)), main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
+    lines(t_grid, sort(averagecdf), main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "red")
+    mse = mean((pnorm(t_grid, thirdfunction(anyx), fourthfunction(anyx)) - averagecdf)^2)
+    
+  }
+  
+  
+  message("mse = ", mse)
+  legend("bottomright", legend=c("original", paste("x = ", anyx)),
+         col=c("blue", "red"), lty=1, cex=0.65)
+}
+
 fit_cdf = function(l, sigma, firstfunction, secondfunction) {
   
-  n = 2^l
+  n <<- 2^l
   x = runif(n, min = 0, max = 1)
   mean_y = sapply(x, firstfunction)
   sigma_y = sapply(x, secondfunction)
@@ -498,7 +552,7 @@ fit_cdf = function(l, sigma, firstfunction, secondfunction) {
   return(w_matrix)
 }
 
-l = 11
+l = 7
 sigma = 0.3
 firstfunction = f3 #check fit_cdf function for usage of firstfunction
 secondfunction = f5 #^^ " " secondfunction
@@ -508,7 +562,9 @@ f3 = f3
 f4 = f4
 
 w_matrix = fit_cdf(l, sigma, firstfunction, secondfunction) #returns w matrix
-plot_cdf(2^10, firstfunction, secondfunction)
+random_x_two_normals(.32, f1, f2, f3, f4)
+
+#plot_cdf(2^5, firstfunction, secondfunction)
 random_x(0.32, firstfunction, secondfunction)
 random_t(0)
 
