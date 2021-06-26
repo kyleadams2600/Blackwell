@@ -462,6 +462,21 @@ two_normals = function(f1, f2, f3, f4) { # returns y generated from 2 normal dis
   return(y)
 }
 
+split_dataset = function(l, size) { # split large dataset into smaller datasets
+  
+  # size parameter is for the number of observations you want in each subset
+  
+  n <<- 2^l
+  x = runif(n, 0, 1)
+  mean_y = sapply(x, f3)
+  sigma_y = sapply(x, f4)
+  y = rnorm(n, mean_y, sigma_y)
+  
+  y_split = split(y, ceiling(seq_along(y)/size))
+  
+  return(y_split)
+}
+
 
 fit_cdf = function(l, sigma, firstfunction, secondfunction) {
   
