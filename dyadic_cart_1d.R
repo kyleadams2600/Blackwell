@@ -535,11 +535,15 @@ prettyplot_cdfs = function(x1, x2, x3, x4, x5) { #need to add legend
   
   
   ggplot(data = df, aes(ylab = "cdf")) +
-    geom_line(mapping = aes(x = t_grid, y = avgcdf1), color = "red") +
-    geom_line(mapping = aes(x = t_grid, y = avgcdf2), color = "blue") +
-    geom_line(mapping = aes(x = t_grid, y = avgcdf3), color = "green") +
-    geom_line(mapping = aes(x = t_grid, y = avgcdf4), color = "orange") +
-    geom_line(mapping = aes(x = t_grid, y = avgcdf5), color = "purple")
+    geom_line(mapping = aes(x = t_grid, y = avgcdf1, color = 'x1')) +
+    geom_line(mapping = aes(x = t_grid, y = avgcdf2, color = 'x2')) +
+    geom_line(mapping = aes(x = t_grid, y = avgcdf3, color = 'x3')) +
+    geom_line(mapping = aes(x = t_grid, y = avgcdf4, color = 'x4')) +
+    geom_line(mapping = aes(x = t_grid, y = avgcdf5, color = 'x5')) +
+    scale_color_manual(name = "X Values", 
+                        #breaks = c("x1", "x2", "x3", "x4", "x5"), 
+                        values = c(x1 = 'red', x2 = 'blue', x3 = 'green', x4 = 'orange', x5 = 'purple')) +
+    labs(title="CDF at Different t-values")
   
   
 }
@@ -559,7 +563,7 @@ prettyplot_tvals = function(t1, t2, t3) { #add legend, fix axes labels
   
 }
 
-l = 8
+l = 7
 lambdas = c(0.5, 1, 2, 3, 4)
 sigma = 0.4
 firstfunction <<- f3 #check fit_cdf function for usage of firstfunction
