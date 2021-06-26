@@ -212,11 +212,6 @@ crossval_even = function(y) { # y is the list of observations
 } 
 
 
-#HOW MANY LAMBDAS?
-# n = sample size = 2^l
-# lambda grid = {1, 2^1, 2^2, ... , 2^log(n)}
-# so number of lambdas will be log(n) (rounded down to nearest int) + 1
-
 #gets lambdas by powers of 2 until log(n)
 get_lambdas = function(y) {
   lambdas = c(0)
@@ -341,57 +336,8 @@ make_new_data = function(y, t_grid) { #makes new vector, 1 if y <= t, 0 if not
   return(w)
 }
 
-#plots cdfs as continuous
-
-plot_cdf = function(xelem, firstfunction, secondfunction) {
-  
-  xval = x[xelem]
-  
-  #mse = mean((pnorm(t_grid, firstfunction(xval), secondfunction(xval)) - w_matrix[,xelem])^2)
-  mse = mean((pnorm(t_grid, firstfunction(xval)) - w_matrix[,xelem])^2)
-  message("mse = ", mse)
-  
-  #plot(t_grid, pnorm(t_grid, firstfunction(xval), secondfunction(xval)), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
-  plot(t_grid, pnorm(t_grid, firstfunction(xval)), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
-  lines(t_grid, w_matrix[,xelem], xlab = "t values", ylim = c(0,1), type = "l", col = "red")
-  
-  legend("bottomright", legend=c("original", paste("x = ", round(xval, digits = 5))),
-         col=c("blue", "red"), lty=1, cex=0.65)
-}
-
-addxplot = function(xelem, colorpick) {
-  
-  xval = x[xelem]
-  
-  lines(t_grid, w_matrix[,xelem], xlab = "t values", ylim = c(0,1), type = "l", col = colorpick)
-  
-}
-
 #add new x's with labels
 
-add3xplots = function(x1, x2, x3) {
-  
-  cdf_index_x1 = which.min(abs(x1 - x)) #finds index in x vector that the given value is closest to
-  averagecdf_x1 = (w_matrix[ ,cdf_index_x1 + 1] + w_matrix[ ,cdf_index_x1 - 1]) / 2
-  plot(t_grid, pnorm(t_grid, firstfunction(x1), secondfunction(x1)), main = paste("cdfs at x = ", x1, ",", x2, ",", x3), xlab = "t values", ylim = c(0,1), type = "l", col = "royalblue4")
-  lines(t_grid, sort(averagecdf_x1), xlab = "t values", ylim = c(0,1), type = "l", lty = 3, col = "royalblue1")
-  
-  cdf_index_x2 = which.min(abs(x2 - x)) #finds index in x vector that the given value is closest to
-  averagecdf_x2 = (w_matrix[ ,cdf_index_x2 + 1] + w_matrix[ ,cdf_index_x2 - 1]) / 2
-  lines(t_grid, pnorm(t_grid, firstfunction(x2), secondfunction(x2)), xlab = "t values", ylim = c(0,1), type = "l", col = "purple4")
-  lines(t_grid, sort(averagecdf_x2), xlab = "t values", ylim = c(0,1), type = "l", lty = 3, col = "purple1")
-  
-  
-  cdf_index_x3 = which.min(abs(x3 - x)) #finds index in x vector that the given value is closest to
-  averagecdf_x3 = (w_matrix[ ,cdf_index_x3 + 1] + w_matrix[ ,cdf_index_x3 - 1]) / 2
-  lines(t_grid, pnorm(t_grid, firstfunction(x3), secondfunction(x3)), xlab = "t values", ylim = c(0,1), type = "l", col = "red4")
-  lines(t_grid, sort(averagecdf_x3), xlab = "t values", ylim = c(0,1), type = "l", lty = 3, col = "red1")
-  
-  
-  legend("bottomright", legend=c(x1, x2, x3),
-         col=c("red", "cyan", "green"), lty=1, cex=0.65)
-  
-}
 
 find_avg_cdf = function(anyx, firstfunction, secondfunction) {
   
@@ -419,7 +365,7 @@ find_avg_cdf = function(anyx, firstfunction, secondfunction) {
   return(average_cdf)
 }
 
-#for any given x
+#plots cdf of an x value
 random_x = function(anyx, firstfunction, secondfunction) { #, twonormals) {
   averagecdf = find_avg_cdf(anyx, firstfunction,secondfunction)
   
@@ -446,6 +392,7 @@ random_x = function(anyx, firstfunction, secondfunction) { #, twonormals) {
   
 }
 
+#plots t as a function of x, returns that best fit
 random_t = function(anyt) {
   
   wvec = c(0)
@@ -597,7 +544,7 @@ prettyplot_tvals = function(t1, t2, t3) { #add legend, fix axes labels
   
 }
 
-l = 4
+l = 8
 lambdas = c(0.5, 1, 2, 3, 4)
 sigma = 0.4
 firstfunction <<- f3 #check fit_cdf function for usage of firstfunction
@@ -612,8 +559,8 @@ w_matrix = fit_cdf(l, sigma, firstfunction, secondfunction) #returns w matrix
 #hist(y)
 
 #plot_cdf(2^5, firstfunction, secondfunction)
-random_x(0.05, firstfunction, secondfunction)
-random_t(1.4) 
+random_x(0.65, firstfunction, secondfunction)
+random_t(1.6) 
 
 
 #one way to plot piecewise cdf
@@ -636,18 +583,8 @@ random_t(1.4)
 
 
 
-##TESTING COMBINING CODE INTO FUNCTIONS
-#ytest = generate_y(6, 0.3, f3, f4)
-#wtestmatrix = fit_cdf(ytest)
 
-#takes average fhat and plots against empirical cdf of y
-#averagefhat = c(0)
 
-#for (j in 1:length(y)) {
-#  averagefhat[j] = sum(w_matrix[j,])/n
-#}
-#plot(ecdf(y))
-#lines(t_grid[seq(1,n,1)], averagefhat, ylim = c(0,1), type = "p", col = "blue", pch = 7)
 
 
 
@@ -667,9 +604,3 @@ random_t(1.4)
 #theta = sapply(seq(1:n)/n,f3)
 #y = rnorm(2^l,mean_y,sigma_y); plot(y)
 
-#currently you have to go back to minimize_pe and run line by line for first 4 vals
-#best_lambda_even #best lambda for even observations
-#best_lambda_odd #best lambda for odd observations
-#pe_even[min_index] #prediction error for even obsv
-#pe_odd[min_index_even] #prediction error for odd obsv
-#mean((y - best_fit)^2) #MSE 
