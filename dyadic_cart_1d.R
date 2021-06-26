@@ -100,7 +100,7 @@ ind = function(x,a,b){
 }
 
 f = function(x){
-  return(ind(x,0,0.4))
+  return(6*sin(x))
 }
 
 
@@ -265,27 +265,22 @@ minimize_pe = function(y, l) {
   #pe_odd uses even observations and vice versa
   for(i in 1:length(lambdas)) { #length is same as #of lambdas
     pe_odd[i] = sum((y[seq(2,length(y),2)] - theta_hat_odd[[i]][seq(2,length(y),2)])^2) #sums squared difference of even observations of y and even observations of thetahat
-    #y_even = y[c(TRUE, FALSE)] #even observations
-    #y_even = y_even[i]
-    #pe_odd[i] = sum(y_even^2)
   }
   
   for(i in 1:length(lambdas)) {
     pe_even[i] = sum((y[seq(1,length(y),2)] - theta_hat_even[[i]][seq(1,length(y),2)])^2) #same as a above but reversed
-    #y_odd = y[c(FALSE, TRUE)] #odd observations
-    #y_odd = y_odd[i]
-    #pe_even[i] = sum(y_odd^2)
+    
   }
   
   min_index_even = which.min(pe_even) # returns index of smallest prediction error
-  best_lambda_even = lambdas[min_index_even] # returns lambda which has the smallest error
+  best_lambda_even <<- lambdas[min_index_even] # returns lambda which has the smallest error
   fit_even = theta_hat_even[[min_index_even]] # final fit for even observations
   
   # repeat process with odd and even switched
   
   
   min_index_odd = which.min(pe_odd) # returns index of smallest error
-  best_lambda_odd = lambdas[min_index_odd] # lambda which has the smallest error
+  best_lambda_odd <<- lambdas[min_index_odd] # lambda which has the smallest error
   fit_odd = theta_hat_odd[[min_index_odd]] # final fit for odd observations
   
   # now just combine odd and even for final fit
@@ -353,11 +348,11 @@ plot_cdf = function(xelem, firstfunction, secondfunction) {
   xval = x[xelem]
   
   #mse = mean((pnorm(t_grid, firstfunction(xval), secondfunction(xval)) - w_matrix[,xelem])^2)
-  mse = mean((ppois(t_grid, firstfunction(xval)) - w_matrix[,xelem])^2)
+  mse = mean((pnorm(t_grid, firstfunction(xval)) - w_matrix[,xelem])^2)
   message("mse = ", mse)
   
   #plot(t_grid, pnorm(t_grid, firstfunction(xval), secondfunction(xval)), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
-  plot(t_grid, ppois(t_grid, firstfunction(xval)), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
+  plot(t_grid, pnorm(t_grid, firstfunction(xval)), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
   lines(t_grid, w_matrix[,xelem], xlab = "t values", ylim = c(0,1), type = "l", col = "red")
   
   legend("bottomright", legend=c("original", paste("x = ", round(xval, digits = 5))),
@@ -398,18 +393,57 @@ add3xplots = function(x1, x2, x3) {
   
 }
 
-
-
-#for any given x
-random_x = function(anyx, firstfunction, secondfunction) {
+find_avg_cdf = function(anyx, firstfunction, secondfunction) {
+  
   
   cdf_index = which.min(abs(anyx - x)) #finds index in x vector that the given value is closest to
-  averagecdf = (w_matrix[ ,cdf_index + 1] + w_matrix[ ,cdf_index - 1]) / 2
+  
+  if (cdf_index == 1) {
+    
+    average_cdf = (w_matrix[,1] + w_matrix[,2]) / 2
+    
+  }
+  
+  else if (cdf_index == n) {
+    
+    average_cdf = (w_matrix[,n-1] + w_matrix[,n+1]) / 2
+    
+  }
+  
+  else {
+    
+    average_cdf = (w_matrix[,cdf_index - 1] + w_matrix[,cdf_index+1]) / 2
+    
+  }
+  
+  return(average_cdf)
+}
+
+#for any given x
+random_x = function(anyx, firstfunction, secondfunction) { #, twonormals) {
+  averagecdf = find_avg_cdf(anyx, firstfunction,secondfunction)
+  
+  #if (twonormals == TRUE) {
+  
+  # fullnorm = pnorm(t_grid, fxn1(anyx), fxn2(anyx)) + pnorm(t_grid, fxn3(anyx), fxn4(anyx)) / 2
+  # plot(t_grid, fullnorm, main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
+  
+  #}
+  
+  #else {
+  
   plot(t_grid, ppois(t_grid, firstfunction(anyx)), main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
+  
+  #}  
+  
   lines(t_grid, sort(averagecdf), main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "red")
   
   legend("bottomright", legend=c("original", paste("x = ", anyx)),
          col=c("blue", "red"), lty=1, cex=0.65)
+  #mse_anyx = mean((fullnorm - averagecdf)^2)
+  mse = mean((pnorm(t_grid, firstfunction(anyx)) - averagecdf)^2)
+  message("mse  = ", mse)
+  
 }
 
 random_t = function(anyt) {
@@ -425,8 +459,9 @@ random_t = function(anyt) {
   }
   
   best_fit = find_best_fit(wvec,l);
-  plot(best_fit, main = paste("t = ", anyt), xlab = "x values", ylim = c(0,1),col = "blue")
-  
+  plot(y, main = "Best Fit mapped onto Y") #original function is black
+  lines(seq(1,n,1),best_fit, type = "p", col = "red") #fit is red
+  return(best_fit)
 }
 
 find_best_fit = function(vec, l) {
@@ -436,7 +471,6 @@ find_best_fit = function(vec, l) {
 
 get_w_matrix = function(y) { 
   
-  t_grid = make_t_grid(y)
   w_matrix = matrix(nrow = length(t_grid), ncol = length(y))
   w = make_new_data(y, t_grid)
   lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9) #choose between automated lambdas, or a specific set of lambdas
@@ -459,92 +493,40 @@ two_normals = function(f1, f2, f3, f4) { # returns y generated from 2 normal dis
   
   coin = c(TRUE, FALSE)
   y = c(0)
-  x = runif(n, 0 ,1)
+  x <<- runif(n, 0 ,1)
   
-  mean1 = sapply(x, f1)
-  sigma1 = sapply(x, f2)
-  norm1 = rnorm(n, mean1, sigma1)
+  mean1 = sapply(x, fxn1)
+  sigma1 = sapply(x, fxn2)
+  norm1 = rnorm(n, mean1, .05)
   
-  mean2 = sapply(x, f3)
-  sigma2 = sapply(x, f4)
-  norm2 = rnorm(n, mean2, sigma2)
+  mean2 = sapply(x, fxn3)
+  sigma2 = sapply(x, fxn4)
+  norm2 = rnorm(n, mean2, .05)
   
-  mse_norm1 = c(0)
-  mse_norm2 = c(0)
   
   for(i in 1:length(x)) {
     result = sample(coin, size = 1, prob = c(0.5, 0.5))
     if (result == TRUE) {
       y[i] = norm1[i]
-      mse_norm1[i] <<- i
     } else {
       y[i] = norm2[i]
-      mse_norm2[i] <<- i
     }
   }
   return(y)
 }
 
-random_x_two_normals = function(anyx, firstfunction, secondfunction, thirdfunction, fourthfunction) {
-  
-  cdf_index = which.min(abs(anyx - x))#finds index in x vector that the given value is closest to
-  
-  if (cdf_index %in% mse_norm1) { #finds estimate and mse based on first normal
-    
-    if (cdf_index == 1) {
-      averagecdf = (w_matrix[ ,1] + w_matrix[ , mse_norm1[2]]) / 2
-    }
-    
-    else if (cdf_index == n) {
-      averagecdf = (w_matrix[ ,n] + w_matrix[ , mse_norm1[length(mse_norm1) - 1]]) / 2
-    }
-    
-    else {
-      averagecdf = (w_matrix[ ,cdf_index] + w_matrix[ , match(cdf_index, mse_norm1) + 1]) / 2
-    }
-    
-    plot(t_grid, pnorm(t_grid, firstfunction(anyx), secondfunction(anyx)), main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
-    lines(t_grid, sort(averagecdf), main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "red")
-    mse = mean((pnorm(t_grid, firstfunction(anyx), secondfunction(anyx)) - averagecdf)^2)
-  }
-  
-  else { #finds estimate and mse based on second normal
-    
-    if (cdf_index == 1) {
-      averagecdf = (w_matrix[ ,1] + w_matrix[ , mse_norm2[2]]) / 2
-    }
-    
-    else if (cdf_index == n) {
-      averagecdf = (w_matrix[ ,n] + w_matrix[ , mse_norm2[length(mse_norm2) - 1]]) / 2
-    }
-    
-    else {
-      averagecdf = (w_matrix[ ,cdf_index] + w_matrix[ , match(cdf_index, mse_norm2) + 1]) / 2
-    }
-    
-    plot(t_grid, pnorm(t_grid, thirdfunction(anyx), fourthfunction(anyx)), main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
-    lines(t_grid, sort(averagecdf), main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "red")
-    mse = mean((pnorm(t_grid, thirdfunction(anyx), fourthfunction(anyx)) - averagecdf)^2)
-    
-  }
-  
-  
-  message("mse = ", mse)
-  legend("bottomright", legend=c("original", paste("x = ", anyx)),
-         col=c("blue", "red"), lty=1, cex=0.65)
-}
 
 fit_cdf = function(l, sigma, firstfunction, secondfunction) {
   
   n <<- 2^l
-  x = runif(n, min = 0, max = 1)
+  x <<- runif(n, min = 0, max = 1)
   mean_y = sapply(x, firstfunction)
   sigma_y = sapply(x, secondfunction)
-  lambda_y = sapply(x, firstfunction)
-  #y = rpois(2^l, lambda_y); plot(y)
-  y = two_normals(f1,f2,f3,f4); plot(y)
-  y = y[order(x)]
-  x = x[order(x)]
+  #lambda_y = sapply(x, firstfunction)
+  y = rnorm(2^l, mean_y, sigma_y); plot(y)
+  #y = two_normals(fxn1,fxn2,fxn3,fxn4); plot(y)
+  y <<- y[order(x)]
+  x <<- x[order(x)]
   t_grid <<- make_t_grid(y)
   w_matrix = get_w_matrix(y)
   #plot_cdf(15, firstfunction, secondfunction)
@@ -552,21 +534,86 @@ fit_cdf = function(l, sigma, firstfunction, secondfunction) {
   return(w_matrix)
 }
 
-l = 7
-sigma = 0.3
-firstfunction = f3 #check fit_cdf function for usage of firstfunction
-secondfunction = f5 #^^ " " secondfunction
-f1 = f # parameters for two_normals function
-f2 = f2
-f3 = f3
-f4 = f4
+get_average_mse = function(x) {
+  
+  sum = 0
+  
+  for (i in 1:length(x)) {
+    
+    sum = sum + mean((pnorm(t_grid, firstfunction(x[i])) - w_matrix[,i])^2)
+    
+  }
+  
+  avg_mse = sum/length(x)
+  message("average mse = ", avg_mse)
+  return(avg_mse)
+  
+  
+  
+}
+
+predictionerrorplot = function(x, lowerbound, upperbound) {
+  
+  avgcdf = find_avg_cdf(x, firstfunction, secondfunction)
+  par(mfrow = c(2, 3))
+  plot(avgcdf, plot.errors.method = "asymptotic", common.scale = FALSE,
+       plot.par.mfrow = FALSE)
+  
+}
+
+prettyplot_cdfs = function(x1, x2, x3, x4, x5) { #need to add legend
+  
+  avgcdf1 = find_avg_cdf(x1, firstfunction, secondfunction)
+  avgcdf2 = find_avg_cdf(x2, firstfunction, secondfunction)
+  avgcdf3 = find_avg_cdf(x3, firstfunction, secondfunction)
+  avgcdf4 = find_avg_cdf(x4, firstfunction, secondfunction)
+  avgcdf5 = find_avg_cdf(x5, firstfunction, secondfunction)
+  
+  df <- data.frame(t_grid, avgcdf1, avgcdf2, avgcdf3, avgcdf4, avgcdf5)
+  
+  
+  ggplot(data = df, aes(ylab = "cdf")) +
+    geom_line(mapping = aes(x = t_grid, y = avgcdf1), color = "red") +
+    geom_line(mapping = aes(x = t_grid, y = avgcdf2), color = "blue") +
+    geom_line(mapping = aes(x = t_grid, y = avgcdf3), color = "green") +
+    geom_line(mapping = aes(x = t_grid, y = avgcdf4), color = "orange") +
+    geom_line(mapping = aes(x = t_grid, y = avgcdf5), color = "purple")
+  
+  
+}
+
+prettyplot_tvals = function(t1, t2, t3) { #add legend, fix axes labels
+  
+  t1_fit = random_t(t1)
+  t2_fit = random_t(t2)
+  t3_fit = random_t(t3)
+  df <- data.frame(x, t1_fit, t2_fit, t3_fit)
+  
+  ggplot(data = df) +
+    geom_point(mapping = aes(x = x, y = t1_fit), color = "red") +
+    geom_point(mapping = aes(x = x, y = t2_fit), color = "blue") +
+    geom_point(mapping = aes(x = x, y = t3_fit), color = "green")
+  
+  
+}
+
+l = 4
+lambdas = c(0.5, 1, 2, 3, 4)
+sigma = 0.4
+firstfunction <<- f3 #check fit_cdf function for usage of firstfunction
+#secondfunction = f5 #^^ " " secondfunction
+
+#fxn1 <<- f # parameters for two_normals function
+#fxn2 <<- f4
+#fxn3 <<- f3
+#fxn4 <<- f4
 
 w_matrix = fit_cdf(l, sigma, firstfunction, secondfunction) #returns w matrix
-random_x_two_normals(.32, f1, f2, f3, f4)
+#hist(y)
 
 #plot_cdf(2^5, firstfunction, secondfunction)
-random_x(0.32, firstfunction, secondfunction)
-random_t(0)
+random_x(0.05, firstfunction, secondfunction)
+random_t(1.4) 
 
 
 #one way to plot piecewise cdf
