@@ -345,10 +345,9 @@ make_new_data = function(y, t_grid) { #makes new vector, 1 if y <= t, 0 if not
   return(w)
 }
 
-#for any given x
-random_x = function(anyx) {
+find_avg_cdf = function(givenx) {
   
-  cdf_index = which.min(abs(anyx - x))#finds index in x vector that the given value is closest to
+  cdf_index = which.min(abs(givenx - x))#finds index in x vector that the given value is closest to
   
   if (cdf_index == 1) {
     averagecdf = (w_matrix[,1]+w_matrix[,2]) / 2
@@ -364,6 +363,13 @@ random_x = function(anyx) {
     
   }
   averagecdf = sort(averagecdf)
+  
+}
+
+#for any given x
+random_x = function(anyx) {
+  
+  averagecdf = find_avg_cdf(anyx)
   plot(t_grid, averagecdf, main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "red")
   lines(t_grid,pnorm(t_grid,f4(anyx),f2(anyx)), col = "blue")
   #add legend
@@ -438,4 +444,5 @@ plot_t = function(tval) {
 
 random_x(.99)
 plot_t(0) #doesn't work atm, works line by line
+
 
