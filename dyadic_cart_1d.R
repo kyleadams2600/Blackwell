@@ -365,9 +365,9 @@ random_x = function(anyx) {
   }
   averagecdf = sort(averagecdf)
   plot(t_grid, averagecdf, main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "red")
-  lines(t_grid,pgamma(t_grid,f4(anyx),f2(anyx)), col = "blue")
+  lines(t_grid,pnorm(t_grid,f4(anyx),f2(anyx)), col = "blue")
   #add legend
-  mse = mean((pgamma(t_grid ,f4(anyx),f2(anyx))-averagecdf)^2)
+  mse = mean((pnorm(t_grid ,f(anyx),f2(anyx))-averagecdf)^2)
   message("mse = ", mse)
 }
 
@@ -377,13 +377,13 @@ l = 9
 n = 2^l
 x = runif(n, min = 0, max = 1)
 
-#mean_y = sapply(x, f)
-#sigma_y = sapply(x, f2)
-#y = rnorm(2^l,mean_y,sigma_y); plot(y)
+mean_y = sapply(x, f)
+sigma_y = sapply(x, f2)
+y = rnorm(2^l,mean_y,sigma_y); plot(y)
 
-shape_y = sapply(x, f4)
-scale_y = sapply(x, f2)
-y = rgamma(n, shape_y, scale_y)
+#shape_y = sapply(x, f4)
+#scale_y = sapply(x, f2)
+#y = rgamma(n, shape_y, scale_y)
 
 y = y[order(x)]
 x = x[order(x)]
@@ -413,63 +413,29 @@ for (t in 1:length(t_grid)) {
 #}
 
 
-random_x(.23)
-#random_t(anyt)
-
-#one way to plot piecewise cdf
-#lines(stepfun(t_grid[seq(1,n-1,1)], sort(w_matrix[, t])), ylim = c(0,1), col = "green")
-
-#generate_y = function(l,sigma,f,f2) {
-
-#  l = 5  
-#n = 2^l
-#  sigma = 0.5
-#theta = sapply(seq(1:n)/n,f)
-#y = theta + rnorm(2^l,0,sigma); plot(y)
-#x = runif(n, min = 0, max = 1)
-#mean_y = sapply(x, f)
-#sigma_y = sapply(x, f2)
-#y = rnorm(2^l,mean_y,sigma_y); plot(y)
-
-#return(y)
-#}
-
-
-
-##TESTING COMBINING CODE INTO FUNCTIONS
-#ytest = generate_y(6, 0.3, f3, f4)
-#wtestmatrix = fit_cdf(ytest)
-
-#takes average fhat and plots against empirical cdf of y
-#averagefhat = c(0)
-
-#for (j in 1:length(y)) {
-#  averagefhat[j] = sum(w_matrix[j,])/n
-#}
-#plot(ecdf(y))
-#lines(t_grid[seq(1,n,1)], averagefhat, ylim = c(0,1), type = "p", col = "blue", pch = 7)
+plot_t = function(tval) {
+  
+  binarytvec = c(0)
+  
+  for (i in 1:length(y)) {
+    if (y[i] <= tval) {
+      binarytvec[i] = 1
+    } else {
+      binarytvec[i] = 0
+    }
+  }
+  
+  cv_btv_odd = crossval_odd(binarytvec); 
+  cv_btv_even = crossval_even(binarytvec); 
+  theta_hat_even = create_theta_vector(l, cv_btv_even); 
+  theta_hat_odd = create_theta_vector(l, cv_btv_odd); 
+  best_fit = minimize_pe(binarytvec,l)
+  plot(y, main = paste("t = ", tval), xlab = "x", ylim = c(0,1),col = "blue")
+  lines(best_fit, type = "p")
+}
 
 
 
-###plotting cdfs and using matrix
-#l = 4
-#n = 2^l
-#sigma = 0.3
-#x = runif(n, min = 0, max = 1) #generate uniform distribution for x
-#theta = sapply(x,f4) #f4 is applied to the uniform distribution x
-#theta = sapply(seq(1:n)/n,f3)
-#y = theta + rnorm(2^l,0,sigma); plot(y)
-#y = theta +rnorm(2^l, 0, 0.2)
-#sigma = 0.3
-#x = runif(n, min = 0, max = 1) #generate uniform distribution for x
-#mean_y = sapply(x,f3) #f3 is applied to the uniform distribution x
-#sigma_y = sapply(x,f4)
-#theta = sapply(seq(1:n)/n,f3)
-#y = rnorm(2^l,mean_y,sigma_y); plot(y)
+random_x(.99)
+plot_t(0) #doesn't work atm, works line by line
 
-#currently you have to go back to minimize_pe and run line by line for first 4 vals
-#best_lambda_even #best lambda for even observations
-#best_lambda_odd #best lambda for odd observations
-#pe_even[min_index] #prediction error for even obsv
-#pe_odd[min_index_even] #prediction error for odd obsv
-#mean((y - best_fit)^2) #MSE 
