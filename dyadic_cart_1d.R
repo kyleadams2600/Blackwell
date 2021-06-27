@@ -256,10 +256,6 @@ minimize_pe = function(y, l) {
   final_fit_odd = c(0)
   final_fit_even = c(0)
   final_fit = c(0)
-  cv_y_odd = crossval_odd(y);# cv_y_odd
-  cv_y_even = crossval_even(y);# cv_y_even
-  theta_hat_even = create_theta_vector(l, cv_y_even);# theta_hat_even
-  theta_hat_odd = create_theta_vector(l, cv_y_odd);# theta_hat_odd
   
   
   #pe_odd uses even observations and vice versa
@@ -306,8 +302,11 @@ minimize_pe = function(y, l) {
 
 #lambdas = get_lambdas(y); #lambdas
 #lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9)
-
-#best_fit = find_best_fit(y,l);# best_fit
+#cv_y_odd = crossval_odd(y);# cv_y_odd
+#cv_y_even = crossval_even(y);# cv_y_even
+#theta_hat_even = create_theta_vector(l, cv_y_even);# theta_hat_even
+#theta_hat_odd = create_theta_vector(l, cv_y_odd);# theta_hat_odd
+#best_fit = minimize_pe(y,l);# best_fit
 
 ###plotting----
 #plot(y, main = "Best Fit mapped onto Y") #original function is black
@@ -346,133 +345,131 @@ make_new_data = function(y, t_grid) { #makes new vector, 1 if y <= t, 0 if not
   return(w)
 }
 
-#plots cdfs as continuous
-
-plot_cdf = function(xval, firstfunction, secondfunction) {
-  cdf = find_avg_cdf(xval)
+#for any given x
+random_x = function(anyx) {
   
-  mse = mean((pnorm(t_grid, firstfunction(xval), secondfunction(xval)) - cdf)^2)
-  message("mse = ", mse)
-  
-  plot(t_grid, pnorm(t_grid, firstfunction(xval), secondfunction(xval)), main = paste("cdf at x = ", xval), ylab = "P(y<=t)", xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
-  lines(t_grid, cdf, xlab = "t", ylab = "P(y<=t)", ylim = c(0,1), type = "l", col = "red")
-  
-  legend("bottomright", legend=c("true cdf", "fit"),
-         col=c("blue", "red"), lty=1, cex=0.65)
-}
-
-find_avg_cdf = function(anyx, firstfunction, secondfunction) {
-  
-  
-  cdf_index = which.min(abs(anyx - x)) #finds index in x vector that the given value is closest to
+  cdf_index = which.min(abs(anyx - x))#finds index in x vector that the given value is closest to
   
   if (cdf_index == 1) {
-    
-    average_cdf = (w_matrix[,1] + w_matrix[,2]) / 2
-    
+    averagecdf = (w_matrix[,1]+w_matrix[,2]) / 2
   }
   
   else if (cdf_index == n) {
-    
-    average_cdf = (w_matrix[,n-1] + w_matrix[,n]) / 2
-    
+    averagecdf = (w_matrix[,n]+w_matrix[,n-1]) / 2
   }
   
   else {
     
-    average_cdf = (w_matrix[,cdf_index - 1] + w_matrix[,cdf_index+1]) / 2
+    averagecdf = (w_matrix[ ,cdf_index + 1] + w_matrix[ ,cdf_index - 1]) / 2
     
   }
-  
-  return(average_cdf)
+  averagecdf = sort(averagecdf)
+  plot(t_grid, averagecdf, main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "red")
+  lines(t_grid,pgamma(t_grid,f4(anyx),f2(anyx)), col = "blue")
+  #add legend
+  mse = mean((pgamma(t_grid ,f4(anyx),f2(anyx))-averagecdf)^2)
+  message("mse = ", mse)
 }
 
-get_average_mse = function(x) {
+
+##to run----
+l = 9
+n = 2^l
+x = runif(n, min = 0, max = 1)
+
+#mean_y = sapply(x, f)
+#sigma_y = sapply(x, f2)
+#y = rnorm(2^l,mean_y,sigma_y); plot(y)
+
+shape_y = sapply(x, f4)
+scale_y = sapply(x, f2)
+y = rgamma(n, shape_y, scale_y)
+
+y = y[order(x)]
+x = x[order(x)]
+
+#fit_cdf = function(y) { #doesnt work as function atm so it's commented out
+
+t_grid = make_t_grid(y) #choose between automated t_grid, or a specific t value or set of t's
+#t_grid = c(1.5)
+
+w_matrix = matrix(nrow = length(y), ncol = length(t_grid))
+w = make_new_data(y, t_grid)
+
+lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9) #choose between automated lambdas, or a specific set of lambdas
+#lambdas = get_lambdas(y)
+
+for (t in 1:length(t_grid)) {
   
-  sum = 0
+  cv_w_odd = crossval_odd(w[[t]]); #cv_w_odd
+  cv_w_even = crossval_even(w[[t]]); #cv_w_even
+  theta_hat_even = create_theta_vector(l, cv_w_even); #theta_hat_even
+  theta_hat_odd = create_theta_vector(l, cv_w_odd); #theta_hat_odd
+  best_fit = minimize_pe(w[[t]],l); #best_fit
   
-  for (i in 1:length(x)) {
-    
-    sum = sum + mean((pnorm(t_grid, firstfunction(x[i])) - w_matrix[,i])^2)
-    
-  }
-  
-  avg_mse = sum/length(x)
-  message("average mse = ", avg_mse)
-  return(avg_mse)
-  
-  
-  
+  w_matrix[t, ] = best_fit #each row represents yhat based on t_grid[t], #matrix[t, ] = best fit for t'th entry in t_grid, matrix [ ,X] is the cdf of xX, # so matrix [ ,5] is the cdf of x5, based on each t in t_grid
 }
-
-random_t = function(anyt) {
-  
-  wvec = c(0)
-  
-  for (i in 1:length(y)) {
-    if (y[i] <= anyt) {
-      wvec[i] = 1
-    } else {
-      wvec[i] = 0
-    }
-  }
-  
-  best_fit = find_best_fit(wvec,l);
-  plot(best_fit, main = paste("t = ", anyt), xlab = "x values", ylim = c(0,1),col = "blue")
-  
-}
-
-find_best_fit = function(vec, l) {
-  best_fit = minimize_pe(vec,l)
-  return(best_fit)
-}
-
-get_w_matrix = function(y) { 
-  
-  t_grid = make_t_grid(y)
-  w_matrix = matrix(nrow = length(t_grid), ncol = length(y))
-  w = make_new_data(y, t_grid)
-  lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9) #choose between automated lambdas, or a specific set of lambdas
-  #lambdas = get_lambdas(y)
-  
-  for (t in 1:length(t_grid)) {
-    
-    w_matrix[t, ] = find_best_fit(w[[t]],l) #each row represents yhat based on t_grid[t], #matrix[t, ] = best fit for t'th entry in t_grid, matrix [ ,X] is the cdf of xX, # so matrix [ ,5] is the cdf of x5, based on each t in t_grid
-    
-  }
-  
-  for (k in 1:length(w_matrix[1,])) {
-    w_matrix[,k] = sort(w_matrix[,k])
-  }
-  
-  return(w_matrix)
-}
-
-fit_cdf = function(l, sigma, firstfunction, secondfunction) {
-  
-  
-  n <<- 2^l
-  x = runif(n, min = 0, max = 1)
-  mean_y = sapply(x, firstfunction)
-  sigma_y = sapply(x, secondfunction)
-  y = rnorm(2^l,mean_y,sigma_y); plot(y)
-  y <<- y[order(x)]
-  x <<- x[order(x)]
-  t_grid <<- make_t_grid(y)
-  w_matrix = get_w_matrix(y)
-  
-  
-  return(w_matrix)
-}
-
-l = 8
-sigma = 0.3
-firstfunction = f4 #check fit_cdf function for usage of firstfunction
-secondfunction = f5 #^^ " " secondfunction
-
-w_matrix = fit_cdf(l, sigma, firstfunction, secondfunction) #returns w matrix
-plot_cdf(31, firstfunction, secondfunction)
-random_x(0.32, firstfunction, secondfunction)
-random_t(0)
+#return(w_matrix)
+#}
 
 
+random_x(.23)
+#random_t(anyt)
+
+#one way to plot piecewise cdf
+#lines(stepfun(t_grid[seq(1,n-1,1)], sort(w_matrix[, t])), ylim = c(0,1), col = "green")
+
+#generate_y = function(l,sigma,f,f2) {
+
+#  l = 5  
+#n = 2^l
+#  sigma = 0.5
+#theta = sapply(seq(1:n)/n,f)
+#y = theta + rnorm(2^l,0,sigma); plot(y)
+#x = runif(n, min = 0, max = 1)
+#mean_y = sapply(x, f)
+#sigma_y = sapply(x, f2)
+#y = rnorm(2^l,mean_y,sigma_y); plot(y)
+
+#return(y)
+#}
+
+
+
+##TESTING COMBINING CODE INTO FUNCTIONS
+#ytest = generate_y(6, 0.3, f3, f4)
+#wtestmatrix = fit_cdf(ytest)
+
+#takes average fhat and plots against empirical cdf of y
+#averagefhat = c(0)
+
+#for (j in 1:length(y)) {
+#  averagefhat[j] = sum(w_matrix[j,])/n
+#}
+#plot(ecdf(y))
+#lines(t_grid[seq(1,n,1)], averagefhat, ylim = c(0,1), type = "p", col = "blue", pch = 7)
+
+
+
+###plotting cdfs and using matrix
+#l = 4
+#n = 2^l
+#sigma = 0.3
+#x = runif(n, min = 0, max = 1) #generate uniform distribution for x
+#theta = sapply(x,f4) #f4 is applied to the uniform distribution x
+#theta = sapply(seq(1:n)/n,f3)
+#y = theta + rnorm(2^l,0,sigma); plot(y)
+#y = theta +rnorm(2^l, 0, 0.2)
+#sigma = 0.3
+#x = runif(n, min = 0, max = 1) #generate uniform distribution for x
+#mean_y = sapply(x,f3) #f3 is applied to the uniform distribution x
+#sigma_y = sapply(x,f4)
+#theta = sapply(seq(1:n)/n,f3)
+#y = rnorm(2^l,mean_y,sigma_y); plot(y)
+
+#currently you have to go back to minimize_pe and run line by line for first 4 vals
+#best_lambda_even #best lambda for even observations
+#best_lambda_odd #best lambda for odd observations
+#pe_even[min_index] #prediction error for even obsv
+#pe_odd[min_index_even] #prediction error for odd obsv
+#mean((y - best_fit)^2) #MSE 
