@@ -377,6 +377,23 @@ random_x = function(anyx) {
   message("mse = ", mse)
 }
 
+threeplots = function(x1, x2, x3) {
+  
+  avgcdf1 = find_avg_cdf(x1)
+  avgcdf2 = find_avg_cdf(x2)
+  avgcdf3 = find_avg_cdf(x3)
+  
+  plot(t_grid, avgcdf1, main = paste("cdfs at x = ", x1, "x = ", x2, "x = ", x3), xlab = "t", ylab = "P(y<=t)", ylim = c(0,1), type = "l", col = "red", lty = 2)
+  lines(t_grid,pnorm(t_grid,f4(x1),f2(x1)), col = "red")
+  lines(t_grid,pnorm(t_grid,f4(x2),f2(x2)), col = "blue")
+  lines(t_grid,pnorm(t_grid,f4(x3),f2(x3)), col = "green")
+  lines(t_grid,avgcdf2, col = "blue", lty = 2)
+  lines(t_grid,avgcdf3, col = "green", lty = 2)
+  
+  legend("bottomright", legend=c(paste(x1), paste(x2), paste(x3)),
+         col=c("red", "blue", "green"), lty=1, cex=0.65)
+  
+}
 
 ##to run----
 l = 9
