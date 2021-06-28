@@ -421,8 +421,8 @@ x = runif(n, min = 0, max = 1)
 
 mean_y = sapply(x, f5)
 sigma_y = sapply(x, f2)
-y = rnorm(2^l,mean_y,0.3); plot(y)
-
+y = rnorm(2^l,mean_y,0.3); plot(y) #make sure if you change the function here
+                                    #that you change it everywhere else (random_x, avg_mse, plot_int, threeplots)
 #shape_y = sapply(x, f4)
 #scale_y = sapply(x, f2)
 #y = rgamma(n, shape_y, scale_y)
