@@ -363,6 +363,7 @@ find_avg_cdf = function(givenx) {
     
   }
   averagecdf = sort(averagecdf)
+  return(averagecdf)
   
 }
 
@@ -371,9 +372,9 @@ random_x = function(anyx) {
   
   averagecdf = find_avg_cdf(anyx)
   plot(t_grid, averagecdf, main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "red")
-  lines(t_grid,pnorm(t_grid,f4(anyx),f2(anyx)), col = "blue")
+  lines(t_grid,pnorm(t_grid,f5(anyx),0.3), col = "blue")
   #add legend
-  mse = mean((pnorm(t_grid ,f(anyx),f2(anyx))-averagecdf)^2)
+  mse = mean((pnorm(t_grid ,f5(anyx),0.3)-averagecdf)^2)
   message("mse = ", mse)
 }
 
@@ -384,25 +385,43 @@ threeplots = function(x1, x2, x3) {
   avgcdf3 = find_avg_cdf(x3)
   
   plot(t_grid, avgcdf1, main = paste("cdfs at x = ", x1, "x = ", x2, "x = ", x3), xlab = "t", ylab = "P(y<=t)", ylim = c(0,1), type = "l", col = "red", lty = 2)
-  lines(t_grid,pnorm(t_grid,f4(x1),f2(x1)), col = "red")
-  lines(t_grid,pnorm(t_grid,f4(x2),f2(x2)), col = "blue")
-  lines(t_grid,pnorm(t_grid,f4(x3),f2(x3)), col = "green")
+  lines(t_grid,pnorm(t_grid,f5(x1),0.3), col = "red")
   lines(t_grid,avgcdf2, col = "blue", lty = 2)
+  lines(t_grid,pnorm(t_grid,f5(x2),0.3), col = "blue")
   lines(t_grid,avgcdf3, col = "green", lty = 2)
+  lines(t_grid,pnorm(t_grid,f5(x3),0.3), col = "green")
+  
   
   legend("bottomright", legend=c(paste(x1), paste(x2), paste(x3)),
          col=c("red", "blue", "green"), lty=1, cex=0.65)
   
+  message("average mse = ", avg_mse(2))
+  
+}
+
+plot_int = function(x4, lowerbound, upperbound) {
+  
+  avgcdf = find_avg_cdf(x4) 
+  
+  minlower = which.min(abs(avgcdf - lowerbound))
+  leftbound = t_grid[minlower]
+  
+  minupper = which.min(abs(avgcdf - upperbound))
+  rightbound = t_grid[minupper]
+  
+  plot(t_grid, avgcdf, type = "l", col = "red")
+  lines(t_grid, pnorm(t_grid, f5(x), 0.3), col = "blue")
+  rect(xleft = leftbound, ybottom = lowerbound, xright = rightbound, ytop = upperbound, border = NA, col = "#FF003322")
 }
 
 ##to run----
-l = 9
+l = 10
 n = 2^l
 x = runif(n, min = 0, max = 1)
 
-mean_y = sapply(x, f)
+mean_y = sapply(x, f5)
 sigma_y = sapply(x, f2)
-y = rnorm(2^l,mean_y,sigma_y); plot(y)
+y = rnorm(2^l,mean_y,0.3); plot(y)
 
 #shape_y = sapply(x, f4)
 #scale_y = sapply(x, f2)
@@ -453,13 +472,29 @@ plot_t = function(tval) {
   theta_hat_even = create_theta_vector(l, cv_btv_even); 
   theta_hat_odd = create_theta_vector(l, cv_btv_odd); 
   best_fit = minimize_pe(binarytvec,l)
-  plot(y, main = paste("t = ", tval), xlab = "x", ylim = c(0,1),col = "blue")
+  plot(y, main = paste("t = ", tval), xlab = "x", col = "blue")
   lines(best_fit, type = "p")
+}
+
+avg_mse = function(temp) {
+  
+  sum = 0
+  
+  for (i in 1:length(x)) {
+    
+    sum = sum + mean((pnorm(t_grid, f5(x[i]), 0.3) - w_matrix[,i])^2)
+    
+  }
+  
+  avg_mse = sum/length(x)
+  message("average mse = ", avg_mse)
+  return(avg_mse)
+  
 }
 
 
 
-random_x(.99)
+random_x(.69)
 plot_t(0) #doesn't work atm, works line by line
-
-
+plot_int(.5, .05, .95)
+threeplots(.1, .5, .9)
