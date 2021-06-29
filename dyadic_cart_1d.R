@@ -130,13 +130,15 @@ f5 = function(x){
 }
 
 f6 = function(x) {
-  a1 = 3*ind(x, 0.1, 0.2)
-  a2 = 2*ind(x, 0.2, 0.4)
-  a3 = 5*ind(x, 0.4, 0.5)
-  a4 = ind(x, 0.5, 0.6)
-  a5 = 4*ind(x, 0.6, 0.75)
-  a6 = 2*ind(x, 0.75, 0.9)
-  a7 = 3*ind(x, 0.9, 1)
+  a1 = .3*ind(x, 0, 0.2)
+  a2 = .2*ind(x, 0.2, 0.4)
+  a3 = .25*ind(x, 0.4, 0.5)
+  a4 = .1*ind(x, 0.5, 0.6)
+  a5 = .35*ind(x, 0.6, 0.75)
+  a6 = .2*ind(x, 0.75, 0.9)
+  a7 = .3*ind(x, 0.9, 1)
+  
+  return(a1+a2+a3+a4+a5+a6+a7)
 }
 
 f7 = function(x) {
@@ -301,22 +303,21 @@ minimize_pe = function(y, l) {
 #y = theta + rnorm(2^l,0,sigma); plot(y)
 
 #lambdas = get_lambdas(y); #lambdas
-#lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9)
-#cv_y_odd = crossval_odd(y);# cv_y_odd
-#cv_y_even = crossval_even(y);# cv_y_even
-#theta_hat_even = create_theta_vector(l, cv_y_even);# theta_hat_even
-#theta_hat_odd = create_theta_vector(l, cv_y_odd);# theta_hat_odd
-#best_fit = minimize_pe(y,l);# best_fit
-
+lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9)
+cv_y_odd = crossval_odd(y);# cv_y_odd
+cv_y_even = crossval_even(y);# cv_y_even
+theta_hat_even = create_theta_vector(l, cv_y_even);# theta_hat_even
+theta_hat_odd = create_theta_vector(l, cv_y_odd);# theta_hat_odd
+best_fit = minimize_pe(y,l);# best_fit
 ###plotting----
-#plot(y, main = "Best Fit mapped onto Y") #original function is black
-#lines(seq(1,n,1),best_fit, type = "p", col = "red") #fit is red
+plot(x, y, main = "Best Fit mapped onto Y") #original function is black
+lines(seq(1,n,1),best_fit, type = "p", col = "red") #fit is red
 
 
 ####Estimating CDFs----
 
 make_t_grid = function(y) {
-  t_grid = vector(mode = "numeric", length = length(y))
+  t_grid = vector(length = length(y))
   y_sorted = sort(y, decreasing = FALSE)
   
   for (i in 1:length(y)) {
@@ -367,29 +368,58 @@ find_avg_cdf = function(givenx) {
   
 }
 
+x_big = x
+y_big = y
+w_matrix_big = w_matrix
+find_avg_cdf_big = function(givenx) {
+  
+  cdf_index = which.min(abs(givenx - x_big))#finds index in x vector that the given value is closest to
+  
+  if (cdf_index == 1) {
+    averagecdf = (w_matrix_big[,1]+w_matrix_big[,2]) / 2
+  }
+  
+  else if (cdf_index == n) {
+    averagecdf = (w_matrix_big[,n]+w_matrix_big[,n-1]) / 2
+  }
+  
+  else {
+    
+    averagecdf = (w_matrix_big[ ,cdf_index + 1] + w_matrix_big[ ,cdf_index - 1]) / 2
+    
+  }
+  averagecdf = sort(averagecdf)
+  return(averagecdf)
+  
+}
+
 #for any given x
 random_x = function(anyx) {
   
-  averagecdf = find_avg_cdf(anyx)
-  plot(t_grid, averagecdf, main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "red")
-  lines(t_grid,pnorm(t_grid,f5(anyx),0.3), col = "blue")
+  averagecdf_small = find_avg_cdf(anyx)
+  averagecdf_big = find_avg_cdf_big(anyx)
+  plot(t_grid, averagecdf_small, main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "red")
+  lines(t_grid,averagecdf_big, col = "blue")
   #add legend
-  mse = mean((pnorm(t_grid ,f5(anyx),0.3)-averagecdf)^2)
+  mse = mean((averagecdf_big-averagecdf_small)^2)
   message("mse = ", mse)
 }
 
 threeplots = function(x1, x2, x3) {
   
   avgcdf1 = find_avg_cdf(x1)
+  avgcdf1_big = find_avg_cdf_big(x1)
   avgcdf2 = find_avg_cdf(x2)
+  avgcdf2_big = find_avg_cdf_big(x2)
   avgcdf3 = find_avg_cdf(x3)
+  avgcdf3_big = find_avg_cdf(x3)
   
   plot(t_grid, avgcdf1, main = paste("cdfs at x = ", x1, "x = ", x2, "x = ", x3), xlab = "t", ylab = "P(y<=t)", ylim = c(0,1), type = "l", col = "red", lty = 2)
-  lines(t_grid,pnorm(t_grid,f5(x1),0.3), col = "red")
+  lines(t_grid,avgcdf1_big, col = "red")
   lines(t_grid,avgcdf2, col = "blue", lty = 2)
-  lines(t_grid,pnorm(t_grid,f5(x2),0.3), col = "blue")
+  lines(t_grid,avgcdf2_big, col = "blue")
   lines(t_grid,avgcdf3, col = "green", lty = 2)
-  lines(t_grid,pnorm(t_grid,f5(x3),0.3), col = "green")
+  lines(t_grid,avgcdf3_big, col = "green")
   
   
   legend("bottomright", legend=c(paste(x1), paste(x2), paste(x3)),
@@ -402,6 +432,7 @@ threeplots = function(x1, x2, x3) {
 plot_int = function(x4, lowerbound, upperbound) {
   
   avgcdf = find_avg_cdf(x4) 
+  avgcdf_big = find_avg_cdf_big(x4)
   
   minlower = which.min(abs(avgcdf - lowerbound))
   leftbound = t_grid[minlower]
@@ -409,20 +440,35 @@ plot_int = function(x4, lowerbound, upperbound) {
   minupper = which.min(abs(avgcdf - upperbound))
   rightbound = t_grid[minupper]
   
-  plot(t_grid, avgcdf, type = "l", col = "red")
-  lines(t_grid, pnorm(t_grid, f5(x), 0.3), col = "blue")
-  rect(xleft = leftbound, ybottom = lowerbound, xright = rightbound, ytop = upperbound, border = NA, col = "#FF003322")
+  plot(t_grid, avgcdf, type = "l", col = "blue", main = paste((upperbound-lowerbound)*100, "% Prediction Interval"), lty = 2, xlab = "t", ylab = "P(y<=t)", ylim = c(0,1))
+  lines(t_grid, avgcdf_big, col = "blue")
+  rect(xleft = leftbound, ybottom = lowerbound, xright = rightbound, ytop = upperbound, border = NA, col = "#FF01AC22")
+  message("interval for x = ", x4, ": (", leftbound,",",rightbound,")")
+  
 }
 
 ##to run----
-l = 10
-n = 2^l
-x = runif(n, min = 0, max = 1)
+#l = 11
+#n = 2^l
+#x = runif(n, min = 0, max = 1)
 
-mean_y = sapply(x, f5)
-sigma_y = sapply(x, f2)
-y = rnorm(2^l,mean_y,0.3); plot(y) #make sure if you change the function here
-                                    #that you change it everywhere else (random_x, avg_mse, plot_int, threeplots)
+
+#mean_y = sapply(x, f4)
+#sigma_y = sapply(x, f6)
+#y = rnorm(2^l,mean_y, sigma_y); plot(y) #make sure if you change the function here
+#that you change it everywhere else (random_x, avg_mse, plot_int, threeplots)
+
+#prob_y = sapply(x, f4)
+#y = rbinom(n, 10, prob_y)
+xldata <- read.csv(file = "actualhd.csv")
+heartdisease <- as.matrix(xldata)
+l = 11
+
+y = as.double(heartdisease[,10])
+x = as.double(heartdisease[,13])
+y = y[513:2560]
+x = x[513:2560]
+n = length(x)
 #shape_y = sapply(x, f4)
 #scale_y = sapply(x, f2)
 #y = rgamma(n, shape_y, scale_y)
@@ -451,6 +497,13 @@ for (t in 1:length(t_grid)) {
   
   w_matrix[t, ] = best_fit #each row represents yhat based on t_grid[t], #matrix[t, ] = best fit for t'th entry in t_grid, matrix [ ,X] is the cdf of xX, # so matrix [ ,5] is the cdf of x5, based on each t in t_grid
 }
+
+for (j in 1:length(x)) {
+  
+  w_matrix[,j] = sort(w_matrix[,j])
+  
+}
+
 #return(w_matrix)
 #}
 
@@ -472,17 +525,18 @@ plot_t = function(tval) {
   theta_hat_even = create_theta_vector(l, cv_btv_even); 
   theta_hat_odd = create_theta_vector(l, cv_btv_odd); 
   best_fit = minimize_pe(binarytvec,l)
-  plot(y, main = paste("t = ", tval), xlab = "x", col = "blue")
-  lines(best_fit, type = "p")
+  plot(x, binarytvec, main = paste("t = ", tval), xlab = "x", col = "blue")
+  lines(x, best_fit, type = "p", col = "red")
 }
 
 avg_mse = function(temp) {
   
   sum = 0
   
+  
   for (i in 1:length(x)) {
     
-    sum = sum + mean((pnorm(t_grid, f5(x[i]), 0.3) - w_matrix[,i])^2)
+    sum = sum + mean((find_avg_cdf_big(x[i]) - w_matrix[,i])^2)
     
   }
   
@@ -494,7 +548,7 @@ avg_mse = function(temp) {
 
 
 
-random_x(.69)
+random_x(32)
 plot_t(0) #doesn't work atm, works line by line
-plot_int(.5, .05, .95)
-threeplots(.1, .5, .9)
+plot_int(30, .05, .95)
+threeplots(21, 27, 33)
