@@ -346,6 +346,33 @@ make_new_data = function(y, t_grid) { #makes new vector, 1 if y <= t, 0 if not
   return(w)
 }
 
+two_normals = function(f1, f2, f3, f4) { # returns y generated from 2 normal dists
+  
+  coin = c(TRUE, FALSE)
+  y = c(0)
+  x = runif(n, 0 ,1)
+  
+  mean1 = sapply(x, f1)
+  sigma1 = sapply(x, f2)
+  norm1 = rnorm(n, mean1, sigma1)
+  
+  mean2 = sapply(x, f3)
+  sigma2 = sapply(x, f4)
+  norm2 = 7+rnorm(n, mean2, sigma2)
+  
+  actualcdf = (pnorm(norm1, mean1, sigma1) + pnorm(norm2, mean2, sigma2)) / 2
+  
+  for(i in 1:length(x)) {
+    result = sample(coin, size = 1, prob = c(0.5, 0.5))
+    if (result == TRUE) {
+      y[i] = norm1[i]
+    } else {
+      y[i] = norm2[i]
+    }
+  }
+  return(y)
+}
+
 find_avg_cdf = function(givenx) {
   
   cdf_index = which.min(abs(givenx - x))#finds index in x vector that the given value is closest to
@@ -403,6 +430,22 @@ random_x = function(anyx) {
   #add legend
   mse = mean((averagecdf_big-averagecdf_small)^2)
   message("mse = ", mse)
+}
+
+random_x_two_normals = function(anyx) {
+
+  avgcdf = find_avg_cdf(anyx)
+  act_cdf = actualcdf # actualcdf defined in line 363
+  act_cdf = sort(act_cdf)
+ 
+  plot(t_grid, act_cdf, main = paste("cdf at x = ", anyx), xlab = "t values", ylim = c(0,1), type = "l", col = "blue")
+  lines(t_grid, sort(avgcdf), col = "red")
+  
+  mse = mean((act_cdf-avgcdf)^2)
+  message("mse = ", mse)
+  
+  legend("bottomright", legend=c("original", paste("x = ", anyx)),
+         col=c("blue", "red"), lty=1, cex=0.65)
 }
 
 threeplots = function(x1, x2, x3) {
@@ -484,8 +527,8 @@ t_grid = make_t_grid(y) #choose between automated t_grid, or a specific t value 
 w_matrix = matrix(nrow = length(y), ncol = length(t_grid))
 w = make_new_data(y, t_grid)
 
-lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9) #choose between automated lambdas, or a specific set of lambdas
-#lambdas = get_lambdas(y)
+#lambdas = c(0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4, 5, 6, 7, 8, 9) #choose between automated lambdas, or a specific set of lambdas
+lambdas = get_lambdas(y)
 
 for (t in 1:length(t_grid)) {
   
@@ -546,8 +589,43 @@ avg_mse = function(temp) {
   
 }
 
+# running two normals function
+l = 11
+n = 2^l
+x = runif(n, 0, 1)
+f1 = f
+f2 = f2
+f3 = f3
+f4 = f4
+y = two_normals(f1,f2,f3,f4)
 
+y = y[order(x)]
+x = x[order(x)]
 
+t_grid = make_t_grid(y)
+
+w_matrix = matrix(nrow = length(y), ncol = length(t_grid))
+w = make_new_data(y, t_grid)
+lambdas = get_lambdas(y)
+
+for (t in 1:length(t_grid)) {
+  
+  cv_w_odd = crossval_odd(w[[t]]); #cv_w_odd
+  cv_w_even = crossval_even(w[[t]]); #cv_w_even
+  theta_hat_even = create_theta_vector(l, cv_w_even); #theta_hat_even
+  theta_hat_odd = create_theta_vector(l, cv_w_odd); #theta_hat_odd
+  best_fit = minimize_pe(w[[t]],l); #best_fit
+  
+  w_matrix[t, ] = best_fit #each row represents yhat based on t_grid[t], #matrix[t, ] = best fit for t'th entry in t_grid, matrix [ ,X] is the cdf of xX, # so matrix [ ,5] is the cdf of x5, based on each t in t_grid
+}
+
+for (j in 1:length(x)) {
+  
+  w_matrix[,j] = sort(w_matrix[,j])
+  
+}
+
+random_x_two_normals(0.5)
 random_x(32)
 plot_t(0) #doesn't work atm, works line by line
 plot_int(30, .05, .95)
